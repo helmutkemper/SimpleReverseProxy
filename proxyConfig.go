@@ -146,7 +146,7 @@ func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
   }
 
   ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
-  output.ToOutput(int64( len( ProxyNewRootConfig ) ), nil, ProxyNewRootConfig, w)
+  output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
 }
 
 /*
@@ -201,7 +201,7 @@ func(el *ProxyConfig)RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
   }
   w.Write(b)
 
-  output.ToOutput(int64( len( ProxyNewRootConfig ) ), nil, ProxyNewRootConfig, w)
+  output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
 }
 
 // Inicializa algumas variáveis
