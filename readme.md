@@ -1,28 +1,15 @@
+# Market Place Proxy
+
+Exemplo de uso
+```
 package main
 
 import (
-  log "github.com/helmutkemper/seelog"
-  mkpConf "github.com/helmutkemper/marketPlaceProxy/config"
+  mkp "github.com/helmutkemper/marketPlaceProxy"
   "net/http"
-  "net/url"
-  "regexp"
-  "time"
-  "net"
-  "sync"
-  "strings"
-  "context"
-  "io"
-  "encoding/json"
-  "bytes"
-  "strconv"
-  "io/ioutil"
-  "fmt"
-  "os"
-  "errors"
 )
 
-
-func hello(w ProxyResponseWriter, r *ProxyRequest) {
+func hello(w mkp.ProxyResponseWriter, r *mkp.ProxyRequest) {
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
   w.Write( []byte( "controller: " ) )
@@ -39,18 +26,18 @@ func hello(w ProxyResponseWriter, r *ProxyRequest) {
 }
 
 func main() {
-  ProxyRootConfig = mkpConf.ProxyConfig{
+  mkp.ProxyRootConfig = mkp.ProxyConfig{
     ListenAndServe: ":8888",
-    Routes: []ProxyRoute{
+    Routes: []mkp.ProxyRoute{
       {
         Name: "blog",
-        Domain: ProxyDomain{
+        Domain: mkp.ProxyDomain{
           SubDomain: "blog",
           Domain: "localhost",
           Port: "8888",
         },
         ProxyEnable: true,
-        ProxyServers: []ProxyUrl{
+        ProxyServers: []mkp.ProxyUrl{
           {
             Name: "docker 1 - ok",
             Url: "http://localhost:2368",
@@ -67,90 +54,83 @@ func main() {
       },
       {
         Name: "hello",
-        Domain: ProxyDomain{
-          NotFoundHandle: ProxyRootConfig.ProxyNotFound,
-          ErrorHandle: ProxyRootConfig.ProxyError,
+        Domain: mkp.ProxyDomain{
+          NotFoundHandle: mkp.ProxyRootConfig.ProxyNotFound,
+          ErrorHandle: mkp.ProxyRootConfig.ProxyError,
           SubDomain: "",
           Domain: "localhost",
           Port: "8888",
         },
-        Path: ProxyPath{
+        Path: mkp.ProxyPath{
           ExpReg: `^/(?P<controller>[a-z0-9-]+)/(?P<module>[a-z0-9-]+)/(?P<site>[a-z0-9]+.(htm|html))$`,
         },
         ProxyEnable: false,
-        Handle: ProxyHandle{
+        Handle: mkp.ProxyHandle{
           Handle: hello,
         },
       },
       {
         Name: "addTest",
-        Domain: ProxyDomain{
-          NotFoundHandle: ProxyRootConfig.ProxyNotFound,
-          ErrorHandle: ProxyRootConfig.ProxyError,
+        Domain: mkp.ProxyDomain{
+          NotFoundHandle: mkp.ProxyRootConfig.ProxyNotFound,
+          ErrorHandle: mkp.ProxyRootConfig.ProxyError,
           SubDomain: "",
           Domain: "localhost",
           Port: "8888",
         },
-        Path: ProxyPath{
+        Path: mkp.ProxyPath{
           Path : "/add",
           Method: "POST",
           //ExpReg: `^/(?P<controller>[a-z0-9-]+)/(?P<module>[a-z0-9-]+)/(?P<site>[a-z0-9]+.(htm|html))$`,
         },
         ProxyEnable: false,
-        Handle: ProxyHandle{
-          Handle: ProxyRootConfig.RouteAdd,
+        Handle: mkp.ProxyHandle{
+          Handle: mkp.ProxyRootConfig.RouteAdd,
         },
       },
       {
         Name: "removeTest",
-        Domain: ProxyDomain{
-          NotFoundHandle: ProxyRootConfig.ProxyNotFound,
-          ErrorHandle: ProxyRootConfig.ProxyError,
+        Domain: mkp.ProxyDomain{
+          NotFoundHandle: mkp.ProxyRootConfig.ProxyNotFound,
+          ErrorHandle: mkp.ProxyRootConfig.ProxyError,
           SubDomain: "",
           Domain: "localhost",
           Port: "8888",
         },
-        Path: ProxyPath{
+        Path: mkp.ProxyPath{
           Path : "/remove",
           Method: "POST",
           //ExpReg: `^/(?P<controller>[a-z0-9-]+)/(?P<module>[a-z0-9-]+)/(?P<site>[a-z0-9]+.(htm|html))$`,
         },
         ProxyEnable: false,
-        Handle: ProxyHandle{
-          Handle: ProxyRootConfig.RouteDelete,
+        Handle: mkp.ProxyHandle{
+          Handle: mkp.ProxyRootConfig.RouteDelete,
         },
       },
       {
         Name: "panel",
-        Domain: ProxyDomain{
-          NotFoundHandle: ProxyRootConfig.ProxyNotFound,
-          ErrorHandle: ProxyRootConfig.ProxyError,
+        Domain: mkp.ProxyDomain{
+          NotFoundHandle: mkp.ProxyRootConfig.ProxyNotFound,
+          ErrorHandle: mkp.ProxyRootConfig.ProxyError,
           SubDomain: "root",
           Domain: "localhost",
           Port: "8888",
         },
-        Path: ProxyPath{
+        Path: mkp.ProxyPath{
           Path: "/statistics",
           Method: "GET",
         },
         ProxyEnable: false,
-        Handle: ProxyHandle{
-          Handle: ProxyRootConfig.ProxyStatistics,
+        Handle: mkp.ProxyHandle{
+          Handle: mkp.ProxyRootConfig.ProxyStatistics,
         },
       },
     },
   }
-  ProxyRootConfig.Prepare()
-  go ProxyRootConfig.VerifyDisabled()
+  mkp.ProxyRootConfig.Prepare()
+  go mkp.ProxyRootConfig.VerifyDisabled()
 
-  http.HandleFunc("/", ProxyFunc)
-  http.ListenAndServe(ProxyRootConfig.ListenAndServe, nil)
+  http.HandleFunc("/", mkp.ProxyFunc)
+  http.ListenAndServe(mkp.ProxyRootConfig.ListenAndServe, nil)
 }
-
-
-
-
-
-
-
-
+```
