@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="https://demos.telerik.com/kendo-ui/grid/keyboard-navigation">
+  <style>html { font-size: 14px; font-family: Arial, Helvetica, sans-serif; }</style>
+  <title></title>
+  <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2018.1.117/styles/kendo.common-material.min.css" />
+  <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2018.1.117/styles/kendo.material.min.css" />
+  <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2018.1.117/styles/kendo.material.mobile.min.css" />
+
+  <script src="https://kendo.cdn.telerik.com/2018.1.117/js/jquery.min.js"></script>
+  <script src="https://kendo.cdn.telerik.com/2018.1.117/js/kendo.all.min.js"></script>
+  <style>
+    .history {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .history td {
+      padding: 0;
+      vertical-align: bottom;
+      height: 30px;
+    }
+    .history td.spark {
+      line-height: 30px;
+      width: 300px;
+    }
+    .history td.value {
+      font-size: 1.0em;
+      font-weight: normal;
+      line-height: 20px;
+    }
+    .history td.value span {
+      font-size: .5em;
+      vertical-align: top;
+      line-height: 30px;
+    }
+  </style>
+</head>
+<body>
+<div id="example">
+  <div id="grid"></div>
+  <div id="details"></div>
+
+  <script>
+    var windowContainerDetails, detailsTemplate;
+    var lastContainerStatusOldValue = {};
+    var containerStatisticsSetIntervalId;
+    var containerStatisticsWaitingData = false;
+    var containerStatisticMemPercentData = [];
+    var containerStatisticCpuPercentData = [];
+    var containerStatisticBlkReadData = [];
+    var containerStatisticBlkWriteData = [];
+    var containerStatisticNetRxData = [];
+    var containerStatisticNetTxData = [];
+    var containerStatisticPidsStatsCurrentData = [];
+    $(document).ready(function() {
+      var dataSource = new kendo.data.DataSource({
+        transport: {
+          read: function(options) {
+            $.ajax({
+              type: "GET",
+              url: "http://panel.localhost:8888/restContainerList",
+              contentType: "application/json; charset=utf-8",
+              dataType: 'json',
+              //data: JSON.stringify({key: "value"}),
+              success: function(data) {
+                var newData = [];
+                for( var i in data.Objects ){
+                  i = parseInt(i);
+                  newData.push({
+                    id: data.Objects[i].Id,
+                    name: data.Objects[i].Names[0],
+                    image: data.Objects[i].Image,
+                    created: new Date( data.Objects[i].Created * 1000 ),
+                    version: data.Objects[i].Labels.VERSION,
+                    state: data.Objects[i].State,
+                    status: data.Objects[i].Status
+                  });
+                }
+
+                options.success(newData);
+              }
+            });
+          }
+        },
+//      pageSize: 25,
+      });
+
+      $("#grid").kendoGrid({
+        dataSource: dataSource,
+        navigatable: true,
+        filterable: true,
+        sortable: true,
+        pageable: true,
+        reorderable: true,
+        resizable: true,
+        columns: [
+          {
+            field: "name",
+            width: 240,
+            title: "Name"
+          },
+          {
+            field: "image",
+            width: 120,
+            title: "Image"
+          },
+          {
+            field: "created",
+            field: "Created",
+            width: 120,
+            template: '#= kendo.toString(created,"dd/MM/yyyy hh:mm") #'
+
+          },
+          {
+            field: "version",
+            width: 120,
+            title: "Version",
+          },
+          {
+            field: "state",
+            width: 120,
+            title: "State",
+          },
+          { command: { text: "View Details", click: showDetails }, title: " ", width: "180px" }
+        ]
+      });
+
+      setInterval(function(){
+        $.ajax({
+          type: "GET",
+          url: "http://panel.localhost:8888/restContainerList",
+          contentType: "application/json; charset=utf-8",
+          dataType: 'json',
+          //data: JSON.stringify({key: "value"}),
+          success: function(data) {
+            let lastContainerStatusNewValue = {};
+
+            for( let i in data.Objects ){
+              i = parseInt(i);
+              if( lastContainerStatusNewValue[data.Objects[i].State] === undefined){
+                lastContainerStatusNewValue[data.Objects[i].State] = 1;
+              }
+              else {
+                lastContainerStatusNewValue[data.Objects[i].State] += 1;
+              }
+            }
+
+            let pass = true;
+
+            try {
+              for (let i in lastContainerStatusNewValue) {
+                if (lastContainerStatusNewValue[i] !== lastContainerStatusOldValue[i]) {
+                  pass = false;
+                  break;
+                }
+              }
+
+              for (let i in lastContainerStatusOldValue) {
+                if (lastContainerStatusNewValue[i] !== lastContainerStatusOldValue[i]) {
+                  pass = false;
+                  break;
+                }
+              }
+            }
+            catch (e) {
+              pass = false;
+            }
+
+            if( pass === true ){
+              return;
+            }
+
+            lastContainerStatusOldValue = lastContainerStatusNewValue;
+
+            let newData = [];
+            for( let i in data.Objects ){
+              i = parseInt(i);
+              newData.push({
+                id: data.Objects[i].Id,
+                name: data.Objects[i].Names[0],
+                image: data.Objects[i].Image,
+                created: new Date( data.Objects[i].Created * 1000 ),
+                version: data.Objects[i].Labels.VERSION,
+                state: data.Objects[i].State,
+                status: data.Objects[i].Status
+              });
+            }
+
+            $("#grid").data("kendoGrid").dataSource.read();
+          }
+        });
+
+      }, 1000);
+
+      windowContainerDetails = $("#details").kendoWindow({
+        title: "Container Details",
+        modal: true,
+        visible: false,
+        resizable: false,
+        width: 600,
+        height: 400,
+        close: function(){
+          clearInterval( containerStatisticsSetIntervalId );
+        },
+        open: function(){
+          //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+          containerStatisticsSetIntervalId = setInterval(getContainerStatistics, 1000, "04d04f1d99e86b38a0404909c35d0512d677d38e047e3171e2b73907575f794b")
+        }
+      }).data("kendoWindow");
+
+      detailsTemplate = kendo.template($("#template").html());
+
+      function showDetails(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        windowContainerDetails.content(detailsTemplate(dataItem));
+        windowContainerDetails.center().open();
+
+        console.log("id:", dataItem.id);
+
+        $("#containerActions").kendoButtonGroup({
+          select: function (e) {
+            let windowContainerDetails = $("#details").data("kendoWindow");
+
+            switch( e.indices[0] ){
+              case 0:
+                windowContainerDetails.close();
+
+
+
+                break;
+
+              case 1:
+                windowContainerDetails.close();
+
+                $.ajax({
+                  type: "GET",
+                  url: "http://panel.localhost:8888/restContainerStart/" + dataItem.id,
+                  contentType: "application/json; charset=utf-8",
+                  dataType: 'json'
+                });
+
+                break;
+
+              case 2:
+                windowContainerDetails.close();
+
+                $.ajax({
+                  type: "GET",
+                  url: "http://panel.localhost:8888/restContainerStop/" + dataItem.id,
+                  contentType: "application/json; charset=utf-8",
+                  dataType: 'json'
+                });
+
+                break;
+
+              case 3:
+                windowContainerDetails.close();
+                console.log("close");
+                break;
+            }
+          },
+          index: -1
+        });
+      }
+
+      $(document.body).keydown(function(e) {
+        if (e.altKey && e.keyCode === 87) {
+          $("#grid").data("kendoGrid").table.focus();
+        }
+      });
+    });
+
+    function addCommas(nStr)
+    {
+      nStr += '';
+      x = nStr.split('.');
+      x1 = x[0];
+      x2 = x.length > 1 ? ',' + x[1].substr(0,1) : '';
+      return x1 + x2;
+    }
+
+    function getContainerStatistics(id){
+      if( containerStatisticsWaitingData === true ){
+        return
+      }
+
+      containerStatisticsWaitingData = true;
+
+      $.ajax({
+        type: "GET",
+        url: "http://panel.localhost:8888/restContainerStats/" + id,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        success: function(data){
+          containerStatisticsWaitingData = false;
+
+          if( data.Meta.Success !== true ){
+            // fixme: mensagem de erro
+            return;
+          }
+
+          containerStatisticMemPercentData.push( data.Objects[0].MemPercent * 100 );
+
+          if( containerStatisticMemPercentData.length > 60 ){
+            containerStatisticMemPercentData = containerStatisticMemPercentData.slice(containerStatisticMemPercentData.length-60, containerStatisticMemPercentData.length);
+          }
+
+          $("#memPercentValue").html( addCommas( data.Objects[0].MemPercent * 100 ) + "%" );
+
+
+
+          containerStatisticCpuPercentData.push( data.Objects[0].CpuPercent );
+          containerStatisticBlkReadData.push( data.Objects[0].BlkRead );
+          containerStatisticBlkWriteData.push( data.Objects[0].BlkWrite );
+          containerStatisticNetRxData.push( data.Objects[0].NetRx );
+          containerStatisticNetTxData.push( data.Objects[0].NetTx );
+          containerStatisticPidsStatsCurrentData.push( data.Objects[0].PidsStatsCurrent );
+
+          $("#memPercent").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticMemPercentData,
+            tooltip: {
+              format: "{0}%"
+            }
+          });
+
+          $("#cpuPercent").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticCpuPercentData,
+            tooltip: {
+              format: "{0}%"
+            }
+          });
+
+          $("#blkRead").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticBlkReadData,
+            tooltip: {
+              format: "{0}B"
+            }
+          });
+
+          $("#blkWrite").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticBlkWriteData,
+            tooltip: {
+              format: "{0}B"
+            }
+          });
+
+          $("#netRx").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticNetRxData,
+            tooltip: {
+              format: "{0}B"
+            }
+          });
+
+          $("#netTx").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticNetTxData,
+            tooltip: {
+              format: "{0}B"
+            }
+          });
+
+          $("#pidsStatsCurrent").kendoSparkline({
+            type: "area",
+            width: 100,
+            data: containerStatisticPidsStatsCurrentData,
+            tooltip: {
+              format: "{0}"
+            }
+          });
+        }
+      });
+    }
+  </script>
+  <script type="text/x-kendo-template" id="template">
+
+
+
+
+
+
+
+
+
+    <table class="history">
+      <tr>
+        <td class="value">Mem: </td>
+        <td class="spark"><span id="memPercent"></span></td>
+        <td class="value" id="memPercentValue">0<span>%</span></td>
+      </tr>
+      <tr>
+        <td class="value">CPU: </td>
+        <td class="spark"><span id="cpuPercent"></span></td>
+        <!--td class="value">21<span>&deg;C</span></td-->
+      </tr>
+      <tr>
+        <td class="value">Block read: </td>
+        <td class="spark"><span id="blkRead"></span></td>
+        <!--td class="value">32<span>%</span></td-->
+      </tr>
+      <tr>
+        <td class="value">Block write: </td>
+        <td class="spark"><span id="blkWrite"></span></td>
+        <!--td class="value">32<span>%</span></td-->
+      </tr>
+      <tr>
+        <td class="value">Net rx: </td>
+        <td class="spark"><span id="netRx"></span></td>
+        <!--td class="value">32<span>%</span></td-->
+      </tr>
+      <tr>
+        <td class="value">Net tx: </td>
+        <td class="spark"><span id="netTx"></span></td>
+        <!--td class="value">32<span>%</span></td-->
+      </tr>
+      <tr>
+        <td class="value">Pids: </td>
+        <td class="spark"><span id="pidsStatsCurrent"></span></td>
+        <!--td class="value">32<span>%</span></td-->
+      </tr>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+    <p>#= id #</p>
+    <h2>Name: #= name #</h2>
+      <em>Image: #= image #</em>
+      <dl>
+        <dt>Status: #= status #</dt>
+        <dt>Created date: #= kendo.toString(created, "MM/dd/yyyy hh:mm") #</dt>
+      </dl>
+    <div id="containerActions">
+      <span disabled>
+        View Log
+      </span>
+      <span>
+        Start
+      </span>
+      <span>
+        Stop
+      </span>
+      <span>
+        Remove
+      </span>
+      <span>
+        Kill
+      </span>
+    </div>
+  </script>
+</div>
+</body>
+</html>
