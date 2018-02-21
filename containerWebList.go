@@ -7,6 +7,7 @@ import (
 )
 
 func ContainerWebList(w ProxyResponseWriter, r *ProxyRequest) {
+  //w.Header().Set("Access-Control-Allow-Origin", "http://htmlpanel.localhost:8888")
   output := JSonOutStt{}
 
   cli, err := client.NewEnvClient()
