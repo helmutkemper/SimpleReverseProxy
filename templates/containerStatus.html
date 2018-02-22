@@ -11,25 +11,80 @@
   <script src="https://kendo.cdn.telerik.com/2018.1.117/js/jquery.min.js"></script>
   <script src="https://kendo.cdn.telerik.com/2018.1.117/js/kendo.all.min.js"></script>
   <style>
-    .history {
+
+    /* Success template - start */
+    .k-notification-success {
+      background: rgba(0%,60%,0%,.7);
+      color: #fff;
+    }
+    .success {
+      width: 280px;
+      height: 80px;
+      padding: 0 30px;
+      line-height: 55px;
+    }
+    .success h3 {
+      font-size: 1em;
+      font-weight: normal;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .success img {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    /* Success template - end */
+
+    .containerLog{
+      max-height: 300px;
+      overflow: auto;
+    }
+
+
+
+    .containerData {
       border-collapse: collapse;
       width: 100%;
     }
-    .history td {
+    .k-window-content h2 {
+      margin-bottom: 2px;
+      margin-top: 5px;
+    }
+    .k-window-content em {
+      font-size: 10px;
+    }
+    .containerData td {
       padding: 0;
       vertical-align: bottom;
       height: 30px;
-    }
-    .history td.spark {
-      line-height: 30px;
-      width: 300px;
-    }
-    .history td.value {
+
       font-size: 1.0em;
       font-weight: normal;
       line-height: 20px;
     }
-    .history td.value span {
+    .containerData td.col1 {
+      width: 90px;
+    }
+    .containerData td.col2 {
+      width: 498px;
+    }
+    .containerData td.col3 {
+      width: 70px;
+    }
+    .containerData th, td {
+      border-bottom: 1px solid #eee;
+    }
+    .containerData td.spark {
+      line-height: 30px;
+      width: 300px;
+    }
+    .containerData td.value {
+      font-size: 1.0em;
+      font-weight: normal;
+      line-height: 20px;
+    }
+    .containerData td.value span {
       font-size: .5em;
       vertical-align: top;
       line-height: 30px;
@@ -107,8 +162,8 @@
           },
           {
             field: "created",
-            field: "Created",
             width: 120,
+            title: "Created",
             template: '#= kendo.toString(created,"dd/MM/yyyy hh:mm") #'
 
           },
@@ -195,17 +250,18 @@
 
       windowContainerDetails = $("#details").kendoWindow({
         title: "Container Details",
+        data: {id: ""},
         modal: true,
         visible: false,
         resizable: false,
-        width: 600,
+        width: 700,
         height: 400,
         close: function(){
           clearInterval( containerStatisticsSetIntervalId );
         },
         open: function(){
-          //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-          containerStatisticsSetIntervalId = setInterval(getContainerStatistics, 1000, "04d04f1d99e86b38a0404909c35d0512d677d38e047e3171e2b73907575f794b")
+          console.log("window id:", this.options.data.id);
+          containerStatisticsSetIntervalId = setInterval(getContainerStatistics, 1000, this.options.data.id);
         }
       }).data("kendoWindow");
 
@@ -214,53 +270,113 @@
       function showDetails(e) {
         e.preventDefault();
 
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        let url = "";
+        let dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        windowContainerDetails.options.data.id = dataItem.id;
         windowContainerDetails.content(detailsTemplate(dataItem));
         windowContainerDetails.center().open();
 
-        console.log("id:", dataItem.id);
+        let popupNotification = $("#popupNotification").kendoNotification({
+          stacking: "down",
+          templates: [{
+            type: "success",
+            template: $("#successTemplate").html()
+          }]
+
+        }).data("kendoNotification");
 
         $("#containerActions").kendoButtonGroup({
           select: function (e) {
             let windowContainerDetails = $("#details").data("kendoWindow");
 
+            windowContainerDetails.close();
+
             switch( e.indices[0] ){
               case 0:
-                windowContainerDetails.close();
-
-
-
-                break;
-
-              case 1:
-                windowContainerDetails.close();
-
                 $.ajax({
                   type: "GET",
-                  url: "http://panel.localhost:8888/restContainerStart/" + dataItem.id,
+                  url: "http://panel.localhost:8888/containerLog/" + dataItem.id,
                   contentType: "application/json; charset=utf-8",
-                  dataType: 'json'
-                });
+                  dataType: 'json',
+                  success: function(data){
+                    if( data.Objects.length === 0 ){
+                      $("#dialog").kendoDialog({
+                        modal: true,
+                        visible: true,
+                        title: "Container error",
+                        content: "No data to show",
+                        width: 800,
+                        actions: [{
+                          text: "OK",
+                        }]
+                      });
+                      return
+                    }
 
+                    $("#dialog").kendoDialog({
+                      modal: true,
+                      visible: true,
+                      title: "Container Log",
+                      content: "<pre class='containerLog'>" + unicodeToChar( data.Objects[0] ) + "</pre>",
+                      width: 800,
+                      actions: [{
+                        text: "OK",
+                      }]
+                    });
+                  },
+                  error: function(data){
+                    $("#dialog").kendoDialog({
+                      modal: true,
+                      visible: true,
+                      title: "Container error",
+                      content: data.responseJSON.Meta.Error,
+                      width: 800,
+                      actions: [{
+                        text: "OK",
+                      }]
+                    });
+                  }
+                });
+                return;
+
+              case 1:
+                url = "http://panel.localhost:8888/restContainerStart/" + dataItem.id;
                 break;
 
               case 2:
-                windowContainerDetails.close();
-
-                $.ajax({
-                  type: "GET",
-                  url: "http://panel.localhost:8888/restContainerStop/" + dataItem.id,
-                  contentType: "application/json; charset=utf-8",
-                  dataType: 'json'
-                });
-
+                url = "http://panel.localhost:8888/restContainerStop/" + dataItem.id;
                 break;
 
               case 3:
-                windowContainerDetails.close();
-                console.log("close");
+                url = "http://panel.localhost:8888/restContainerRemove/" + dataItem.id;
+                break;
+
+              case 4:
+                url = "http://panel.localhost:8888/restContainerKill/" + dataItem.id;
                 break;
             }
+
+            $.ajax({
+              type: "GET",
+              url: url,
+              contentType: "application/json; charset=utf-8",
+              dataType: 'json',
+              success: function(data){
+                popupNotification.show({ message: "Command executed successfully" }, "success");
+              },
+              error: function(data){
+                $("#dialog").kendoDialog({
+                  modal: true,
+                  visible: true,
+                  title: "Container error",
+                  content: data.responseJSON.Meta.Error,
+                  width: 800,
+                  actions: [{
+                    text: "OK",
+                  }]
+                });
+              }
+            });
           },
           index: -1
         });
@@ -273,13 +389,34 @@
       });
     });
 
-    function addCommas(nStr)
-    {
+    function unicodeToChar(text) {
+      return text.replace(/\\u[\dA-F]{4}/gi,
+          function (match) {
+            return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+          });
+    }
+    function adjustByteUnit(nFlt){
+      if(nFlt >= 1024 * 1024 * 1024 * 1024){
+        return adjustDecimalPoint(nFlt / (1024 * 1024 * 1024 * 1024)) + " TB";
+      }
+      if(nFlt >= 1024 * 1024 * 1024){
+        return adjustDecimalPoint(nFlt / (1024 * 1024 * 1024)) + " GB";
+      }
+      if(nFlt >= 1024 * 1024){
+        return adjustDecimalPoint(nFlt / (1024 * 1024)) + " MB";
+      }
+      if(nFlt >= 1024){
+        return adjustDecimalPoint(nFlt / (1024)) + " KB";
+      }
+      return adjustDecimalPoint(nFlt)  + " B";
+    }
+    function adjustDecimalPoint(nStr){
       nStr += '';
       x = nStr.split('.');
       x1 = x[0];
-      x2 = x.length > 1 ? ',' + x[1].substr(0,1) : '';
-      return x1 + x2;
+      x2 = x.length > 1 ? '.' + x[1].substr(0,1) : '';
+      return x1;
+      //return x1 + x2;
     }
 
     function getContainerStatistics(id){
@@ -291,7 +428,7 @@
 
       $.ajax({
         type: "GET",
-        url: "http://panel.localhost:8888/restContainerStats/" + id,
+        url: "http://panel.localhost:8888/restContainerStatsLog/" + id,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
         success: function(data){
@@ -302,157 +439,151 @@
             return;
           }
 
-          containerStatisticMemPercentData.push( data.Objects[0].MemPercent * 100 );
+          containerStatisticMemPercentData       = [];
+          containerStatisticCpuPercentData       = [];
+          containerStatisticBlkReadData          = [];
+          containerStatisticBlkWriteData         = [];
+          containerStatisticNetRxData            = [];
+          containerStatisticNetTxData            = [];
+          containerStatisticPidsStatsCurrentData = [];
 
-          if( containerStatisticMemPercentData.length > 60 ){
-            containerStatisticMemPercentData = containerStatisticMemPercentData.slice(containerStatisticMemPercentData.length-60, containerStatisticMemPercentData.length);
+          for( let i = 0; i !== data.Objects.length; i += 1){
+            containerStatisticMemPercentData.push( adjustDecimalPoint( data.Objects[ i ].MemPercent * 100 ) );
+            containerStatisticCpuPercentData.push( adjustDecimalPoint( data.Objects[ i ].CpuPercent * 100 ) );
+            containerStatisticBlkReadData.push( adjustDecimalPoint( data.Objects[ i ].BlkRead / 1024 ) );
+            containerStatisticBlkWriteData.push( adjustDecimalPoint( data.Objects[ i ].BlkWrite / 1024 ) );
+            containerStatisticNetRxData.push( adjustDecimalPoint( data.Objects[ i ].NetRx / 1024 ) );
+            containerStatisticNetTxData.push( adjustDecimalPoint( data.Objects[ i ].NetTx / 1024 ) );
+            containerStatisticPidsStatsCurrentData.push( adjustDecimalPoint( data.Objects[ i ].PidsStatsCurrent ) );
           }
 
-          $("#memPercentValue").html( addCommas( data.Objects[0].MemPercent * 100 ) + "%" );
-
-
-
-          containerStatisticCpuPercentData.push( data.Objects[0].CpuPercent );
-          containerStatisticBlkReadData.push( data.Objects[0].BlkRead );
-          containerStatisticBlkWriteData.push( data.Objects[0].BlkWrite );
-          containerStatisticNetRxData.push( data.Objects[0].NetRx );
-          containerStatisticNetTxData.push( data.Objects[0].NetTx );
-          containerStatisticPidsStatsCurrentData.push( data.Objects[0].PidsStatsCurrent );
+          $("#memPercentValue").html( containerStatisticMemPercentData[ containerStatisticMemPercentData.length - 1 ] + "%" );
+          $("#cpuPercentValue").html( containerStatisticCpuPercentData[ containerStatisticCpuPercentData.length - 1 ] + "%" );
+          $("#blkReadValue").html( adjustByteUnit( containerStatisticBlkReadData[ containerStatisticBlkReadData.length - 1 ] ) );
+          $("#blkWriteValue").html( adjustByteUnit( containerStatisticBlkWriteData[ containerStatisticBlkWriteData.length - 1 ] ) );
+          $("#netRxValue").html( adjustByteUnit( containerStatisticNetRxData[ containerStatisticNetRxData.length - 1 ] ) );
+          $("#netTxValue").html( adjustByteUnit( containerStatisticNetTxData[ containerStatisticNetTxData.length - 1 ] ) );
+          $("#pidsStatsCurrentValue").html( containerStatisticPidsStatsCurrentData[ containerStatisticPidsStatsCurrentData.length - 1 ] );
 
           $("#memPercent").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticMemPercentData,
             tooltip: {
               format: "{0}%"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
 
           $("#cpuPercent").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticCpuPercentData,
             tooltip: {
               format: "{0}%"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
 
           $("#blkRead").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticBlkReadData,
             tooltip: {
               format: "{0}B"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
 
           $("#blkWrite").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticBlkWriteData,
             tooltip: {
               format: "{0}B"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
 
           $("#netRx").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticNetRxData,
             tooltip: {
               format: "{0}B"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
 
           $("#netTx").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticNetTxData,
             tooltip: {
               format: "{0}B"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
 
           $("#pidsStatsCurrent").kendoSparkline({
             type: "area",
-            width: 100,
             data: containerStatisticPidsStatsCurrentData,
             tooltip: {
               format: "{0}"
-            }
+            },
+            seriesColors: ["#558B9B"],
           });
         }
       });
     }
   </script>
+  <script id="successTemplate" type="text/x-kendo-template">
+    <div class="success">
+      <img src="http://localhost:8888/static/template/notifications/success-icon.png" />
+      <h3>#= message #</h3>
+    </div>
+  </script>
   <script type="text/x-kendo-template" id="template">
-
-
-
-
-
-
-
-
-
-    <table class="history">
+    <h2>Name: #= name #</h2>
+    <em>Image: #= image #</em>
+    <table class="containerData">
       <tr>
-        <td class="value">Mem: </td>
-        <td class="spark"><span id="memPercent"></span></td>
-        <td class="value" id="memPercentValue">0<span>%</span></td>
+        <td class="col1">Mem: </td>
+        <td class="col2"><span id="memPercent"></span></td>
+        <td class="col3" id="memPercentValue">0%</td>
       </tr>
       <tr>
-        <td class="value">CPU: </td>
-        <td class="spark"><span id="cpuPercent"></span></td>
-        <!--td class="value">21<span>&deg;C</span></td-->
+        <td class="col1">CPU: </td>
+        <td class="col2"><span id="cpuPercent"></span></td>
+        <td class="col3" id="cpuPercentValue">0%</td>
       </tr>
       <tr>
-        <td class="value">Block read: </td>
-        <td class="spark"><span id="blkRead"></span></td>
-        <!--td class="value">32<span>%</span></td-->
+        <td class="col1">Block read: </td>
+        <td class="col2"><span id="blkRead"></span></td>
+        <td class="col3" id="blkReadValue">0kB</td>
       </tr>
       <tr>
-        <td class="value">Block write: </td>
-        <td class="spark"><span id="blkWrite"></span></td>
-        <!--td class="value">32<span>%</span></td-->
+        <td class="col1">Block write: </td>
+        <td class="col2"><span id="blkWrite"></span></td>
+        <td class="col3" id="blkWriteValue">0kB</td>
       </tr>
       <tr>
-        <td class="value">Net rx: </td>
-        <td class="spark"><span id="netRx"></span></td>
-        <!--td class="value">32<span>%</span></td-->
+        <td class="col1">Net rx: </td>
+        <td class="col2"><span id="netRx"></span></td>
+        <td class="col3" id="netRxValue">0kB</td>
       </tr>
       <tr>
-        <td class="value">Net tx: </td>
-        <td class="spark"><span id="netTx"></span></td>
-        <!--td class="value">32<span>%</span></td-->
+        <td class="col1">Net tx: </td>
+        <td class="col2"><span id="netTx"></span></td>
+        <td class="col3" id="netTxValue">0kB</td>
       </tr>
       <tr>
-        <td class="value">Pids: </td>
-        <td class="spark"><span id="pidsStatsCurrent"></span></td>
-        <!--td class="value">32<span>%</span></td-->
+        <td class="col1">Pids: </td>
+        <td class="col2"><span id="pidsStatsCurrent"></span></td>
+        <td class="col3" id="pidsStatsCurrentValue">0</td>
       </tr>
     </table>
 
-
-
-
-
-
-
-
-
-
-
-
-    <p>#= id #</p>
-    <h2>Name: #= name #</h2>
-      <em>Image: #= image #</em>
-      <dl>
-        <dt>Status: #= status #</dt>
-        <dt>Created date: #= kendo.toString(created, "MM/dd/yyyy hh:mm") #</dt>
-      </dl>
+    <dl>
+      <dt>Status: #= status #</dt>
+      <dt>Created date: #= kendo.toString(created, "MM/dd/yyyy hh:mm") #</dt>
+    </dl>
     <div id="containerActions">
-      <span disabled>
+      <span>
         View Log
       </span>
       <span>
@@ -470,5 +601,7 @@
     </div>
   </script>
 </div>
+<span id="popupNotification"></span>
+<div id="dialog"></div>
 </body>
 </html>

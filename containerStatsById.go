@@ -147,6 +147,11 @@ func ContainerStatsById(w ProxyResponseWriter, r *ProxyRequest) {
 
   decode := containerDockerStats{}
   decode.ToDecode, err = cli.ContainerStats(ctx, inDataLStt.Id, false)
+  if err != nil {
+    output.ToOutput(0, err, []int{}, w)
+    return
+  }
+
   err = decode.Decode()
   if err != nil {
     output.ToOutput(0, err, []int{}, w)
