@@ -16,6 +16,8 @@ func ContainerWebStatsLogSetLimit( limit int ){
 }
 
 func ContainerStatsLog() error {
+  var idList = make( map[string]bool )
+
   cli, err := client.NewEnvClient()
   if err != nil {
     return err
@@ -27,6 +29,8 @@ func ContainerStatsLog() error {
   }
 
   for _, containerData := range containers {
+    idList[ containerData.ID ] = true
+
     if len( containerStatsData[ containerData.ID ] ) == 0 || len( containerStatsData[ containerData.ID ] ) != containerStatsLimit {
       containerStatsData[ containerData.ID ] = make( []containerStatsOut, containerStatsLimit )
 
@@ -48,6 +52,13 @@ func ContainerStatsLog() error {
 
     containerStatsData[ containerData.ID ] = containerStatsData[ containerData.ID ][1:]
     containerStatsData[ containerData.ID ] = append( containerStatsData[ containerData.ID ], decode.Stats )
+  }
+
+  // When a container is removed, its data remains and must be removed
+  for idFound := range containerStatsData {
+    if idList[ idFound ] == false {
+      delete( idList, idFound )
+    }
   }
 
   return nil
@@ -84,8 +95,9 @@ func ContainerWebStatsLogById(w ProxyResponseWriter, r *ProxyRequest) {
 }
 
 func init(){
+  // This value directly influences the length of the graph kendo ui spark line
   containerStatsLimit = 99
-  containerStatsInterval = time.Second * 5
+  containerStatsInterval = time.Second * 2
   containerStatsData = make( map[string][]containerStatsOut )
 
   go ContainerStatsLogStart()

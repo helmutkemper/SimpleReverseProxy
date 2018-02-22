@@ -67,22 +67,13 @@
       width: 90px;
     }
     .containerData td.col2 {
-      width: 498px;
+      width: 508px;
     }
     .containerData td.col3 {
-      width: 70px;
+      width: 60px;
     }
     .containerData th, td {
       border-bottom: 1px solid #eee;
-    }
-    .containerData td.spark {
-      line-height: 30px;
-      width: 300px;
-    }
-    .containerData td.value {
-      font-size: 1.0em;
-      font-weight: normal;
-      line-height: 20px;
     }
     .containerData td.value span {
       font-size: .5em;
@@ -126,7 +117,8 @@
                     id: data.Objects[i].Id,
                     name: data.Objects[i].Names[0],
                     image: data.Objects[i].Image,
-                    created: new Date( data.Objects[i].Created * 1000 ),
+                    createdYear: new Date( data.Objects[i].Created * 1000 ),
+                    createdHour: new Date( data.Objects[i].Created * 1000 ),
                     version: data.Objects[i].Labels.VERSION,
                     state: data.Objects[i].State,
                     status: data.Objects[i].Status
@@ -138,11 +130,12 @@
             });
           }
         },
-//      pageSize: 25,
+        pageSize: 25,
       });
 
       $("#grid").kendoGrid({
         dataSource: dataSource,
+        //height: 500,
         navigatable: true,
         filterable: true,
         sortable: true,
@@ -161,10 +154,17 @@
             title: "Image"
           },
           {
-            field: "created",
-            width: 120,
-            title: "Created",
-            template: '#= kendo.toString(created,"dd/MM/yyyy hh:mm") #'
+            field: "createdYear",
+            width: 80,
+            title: "Created Day",
+            template: '#= kendo.toString(createdYear,"dd/MM/yyyy") #'
+
+          },
+          {
+            field: "createdHour",
+            width: 60,
+            title: "Created Hour",
+            template: '#= kendo.toString(createdHour,"hh:mm") #'
 
           },
           {
@@ -235,7 +235,8 @@
                 id: data.Objects[i].Id,
                 name: data.Objects[i].Names[0],
                 image: data.Objects[i].Image,
-                created: new Date( data.Objects[i].Created * 1000 ),
+                createdYear: new Date( data.Objects[i].Created * 1000 ),
+                createdHour: new Date( data.Objects[i].Created * 1000 ),
                 version: data.Objects[i].Labels.VERSION,
                 state: data.Objects[i].State,
                 status: data.Objects[i].Status
@@ -246,7 +247,7 @@
           }
         });
 
-      }, 1000);
+      }, 2000);
 
       windowContainerDetails = $("#details").kendoWindow({
         title: "Container Details",
@@ -579,8 +580,8 @@
     </table>
 
     <dl>
-      <dt>Status: #= status #</dt>
-      <dt>Created date: #= kendo.toString(created, "MM/dd/yyyy hh:mm") #</dt>
+      <dt>Status: <b>#= status #</b></dt>
+      <dt>Created date: <b>#= kendo.toString(createdYear, "dd/MM/yyyy hh:mm") #</b></dt>
     </dl>
     <div id="containerActions">
       <span>
