@@ -22,8 +22,8 @@ func ContainerStatsLog() error {
   if err != nil {
     return err
   }
-
-  containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+  
+  containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{ All: true })
   if err != nil {
     return err
   }
@@ -57,7 +57,7 @@ func ContainerStatsLog() error {
   // When a container is removed, its data remains and must be removed
   for idFound := range containerStatsData {
     if idList[ idFound ] == false {
-      delete( idList, idFound )
+      delete( containerStatsData, idFound )
     }
   }
 
