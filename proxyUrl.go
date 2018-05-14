@@ -1,6 +1,9 @@
 package marketPlaceProcy
 
-import "time"
+import (
+  "time"
+  "encoding/json"
+)
 
 type ProxyUrl struct {
   /*
@@ -59,4 +62,20 @@ type ProxyUrl struct {
   A ideia é escolher a próximo rota livre em vez de ficar repetindo
   */
   LastLoopOk                      bool                    `json:"lastLoopOk"`
+}
+func (el *ProxyUrl) MarshalJSON() ([]byte, error) {
+
+  return json.Marshal(&ProxyUrl{
+    Url: el.Url,
+    Name: el.Name,
+    TotalTime: el.TotalTime,
+    UsedSuccessfully: el.UsedSuccessfully,
+    Enabled: el.Enabled,
+    Forever: el.Forever,
+    ErrorCounter: el.ErrorCounter,
+    ErrorConsecutiveCounter: el.ErrorConsecutiveCounter,
+    DisabledSince: el.DisabledSince,
+    LastLoopError: el.LastLoopError, 
+    LastLoopOk: el.LastLoopOk,
+  })
 }

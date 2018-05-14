@@ -1,5 +1,9 @@
 package marketPlaceProcy
 
+import (
+  "encoding/json"
+)
+
 type ProxyRoute struct {
   /*
   Nome para o log e outras funções, deve ser único e começar com letra ou '_'
@@ -31,4 +35,13 @@ type ProxyRoute struct {
   */
   ProxyServers                    []ProxyUrl              `json:"proxyServers"`
 }
-
+func (el *ProxyRoute) MarshalJSON() ([]byte, error) {
+  return json.Marshal(&ProxyRoute{
+    Name: el.Name,
+    Domain: el.Domain,
+    Path: el.Path,
+    Handle: el.Handle,
+    ProxyEnable: el.ProxyEnable,
+    ProxyServers: el.ProxyServers,
+  })
+}

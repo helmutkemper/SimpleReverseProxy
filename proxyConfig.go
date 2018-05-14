@@ -8,6 +8,8 @@ import (
   "errors"
   log "github.com/helmutkemper/seelog"
   "time"
+  "reflect"
+  "runtime"
 )
 
 type ProxyConfig struct {
@@ -26,11 +28,13 @@ type ProxyConfig struct {
   Função de erro genérica, caso a função do domínio não seja definida
   */
   ErrorHandle                     ProxyHandlerFunc        `json:"-"`
+  ErrorHandleAsString             string                  `json:"ErrorHandle"`
 
   /*
   Função de page not found genérica, caso a função do domínio não seja definida
   */
   NotFoundHandle                  ProxyHandlerFunc        `json:"-"`
+  NotFoundHandleAsString          string                  `json:"NotFoundHandle"`
 
   /*
   Tamanho de caracteres do token de segurança
@@ -171,8 +175,9 @@ func(el *ProxyConfig)RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
   }
 
   var i int
-  nameFound := false
-  for i = 0; i != len( ProxyRootConfig.Routes ); i += 1 {
+  var l = len( ProxyRootConfig.Routes )
+  var nameFound = false
+  for i = 0; i != l; i += 1 {
     if ProxyRootConfig.Routes[i].Name == newRoute.Name {
       nameFound = true
       break
@@ -335,4 +340,20 @@ func(el *ProxyConfig)ProxyStatistics(w ProxyResponseWriter, r *ProxyRequest) {
   }
 
   w.Write( byteJSon )
+}
+
+func (el *ProxyConfig) MarshalJSON() ([]byte, error) {
+  return json.Marshal(&ProxyConfig{
+    SeeLogConfig: el.SeeLogConfig,
+    DomainExpReg: el.DomainExpReg,
+    ErrorHandleAsString: runtime.FuncForPC( reflect.ValueOf( el.ErrorHandle ).Pointer() ).Name(),
+    NotFoundHandleAsString: runtime.FuncForPC( reflect.ValueOf( el.NotFoundHandle ).Pointer() ).Name(),
+    UniqueIdLength: el.UniqueIdLength,
+    ListenAndServe: el.ListenAndServe,
+    MaxLoopTry: el.MaxLoopTry,
+    ConsecutiveErrorsToDisable: el.ConsecutiveErrorsToDisable,
+    TimeToKeepDisabled: el.TimeToKeepDisabled,
+    TimeToVerifyDisabled: el.TimeToVerifyDisabled,
+    Routes: el.Routes,
+  })
 }

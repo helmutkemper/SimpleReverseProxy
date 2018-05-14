@@ -1,6 +1,11 @@
 package marketPlaceProcy
 
-import "time"
+import (
+  "time"
+  "runtime"
+  "reflect"
+  "encoding/json"
+)
 
 type ProxyHandle struct {
   /*
@@ -23,5 +28,16 @@ type ProxyHandle struct {
   Função a ser servida
   */
   Handle                          ProxyHandlerFunc        `json:"-"`
+  
+  
+  HandleAsString                  string                  `json:"handle"`
+}
+func (el *ProxyHandle) MarshalJSON() ([]byte, error) {
+  return json.Marshal(&ProxyHandle{
+    Name: el.Name,
+    TotalTime: el.TotalTime,
+    UsedSuccessfully: el.UsedSuccessfully,
+    HandleAsString: runtime.FuncForPC( reflect.ValueOf( el.Handle ).Pointer() ).Name(),
+  })
 }
 
