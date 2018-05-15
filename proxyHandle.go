@@ -2,9 +2,9 @@ package marketPlaceProcy
 
 import (
   "time"
+  "encoding/json"
   "runtime"
   "reflect"
-  "encoding/json"
 )
 
 type ProxyHandle struct {
@@ -33,11 +33,35 @@ type ProxyHandle struct {
   HandleAsString                  string                  `json:"handle"`
 }
 func (el *ProxyHandle) MarshalJSON() ([]byte, error) {
-  return json.Marshal(&ProxyHandle{
-    Name: el.Name,
-    TotalTime: el.TotalTime,
+  return json.Marshal(&struct{
+    Name                            string                  `json:"name"`
+    TotalTime                       time.Duration           `json:"totalTime"`
+    UsedSuccessfully                int64                   `json:"usedSuccessfully"`
+    HandleAsString                  string                  `json:"handleAsString"`
+  }{
+    Name:             el.Name,
+    TotalTime:        el.TotalTime,
     UsedSuccessfully: el.UsedSuccessfully,
-    HandleAsString: runtime.FuncForPC( reflect.ValueOf( el.Handle ).Pointer() ).Name(),
+    HandleAsString:    runtime.FuncForPC( reflect.ValueOf( el.Handle ).Pointer() ).Name(),
   })
 }
+func (el *ProxyHandle) UnmarshalJSON(data []byte) error {
+  type tmpStt struct{
+    Name                            string                  `json:"name"`
+    TotalTime                       time.Duration           `json:"totalTime"`
+    UsedSuccessfully                int64                   `json:"usedSuccessfully"`
+    HandleAsString                  string                  `json:"handleAsString"`
+  }
+  var tmp = tmpStt{}
+  err := json.Unmarshal( data, &tmp )
+  if err != nil {
+    return err
+  }
 
+  el.Handle             = FuncMap[ tmp.HandleAsString ].( ProxyHandlerFunc )
+  el.Name               = tmp.Name
+  el.TotalTime          = tmp.TotalTime
+  el.UsedSuccessfully   = tmp.UsedSuccessfully
+
+  return nil
+}

@@ -64,18 +64,32 @@ type ProxyUrl struct {
   LastLoopOk                      bool                    `json:"lastLoopOk"`
 }
 func (el *ProxyUrl) MarshalJSON() ([]byte, error) {
-
-  return json.Marshal(&ProxyUrl{
-    Url: el.Url,
-    Name: el.Name,
-    TotalTime: el.TotalTime,
-    UsedSuccessfully: el.UsedSuccessfully,
-    Enabled: el.Enabled,
-    Forever: el.Forever,
-    ErrorCounter: el.ErrorCounter,
-    ErrorConsecutiveCounter: el.ErrorConsecutiveCounter,
-    DisabledSince: el.DisabledSince,
-    LastLoopError: el.LastLoopError, 
-    LastLoopOk: el.LastLoopOk,
+  return json.Marshal(&struct{
+    Url                             string                  `json:"url"`
+    Name                            string                  `json:"name"`
+    TotalTime                       time.Duration           `json:"totalTime"`
+    UsedSuccessfully                int64                   `json:"usedSuccessfully"`
+    Enabled                         bool                    `json:"enabled"`
+    Forever                         bool                    `json:"forever"`
+    ErrorCounter                    int64                   `json:"errorCounter"`
+    ErrorConsecutiveCounter         int64                   `json:"errorConsecutiveCounter"`
+    DisabledSince                   time.Time               `json:"-"`
+    LastLoopError                   bool                    `json:"lastLoopError"`
+    LastLoopOk                      bool                    `json:"lastLoopOk"`
+  }{
+    Url:                      el.Url,
+    Name:                     el.Name,
+    TotalTime:                el.TotalTime,
+    UsedSuccessfully:         el.UsedSuccessfully,
+    Enabled:                  el.Enabled,
+    Forever:                  el.Forever,
+    ErrorCounter:             el.ErrorCounter,
+    ErrorConsecutiveCounter:  el.ErrorConsecutiveCounter,
+    DisabledSince:            el.DisabledSince,
+    LastLoopError:            el.LastLoopError,
+    LastLoopOk:               el.LastLoopOk,
   })
+}
+func (el *ProxyUrl) UnmarshalJSON(data []byte) error {
+  return json.Unmarshal( data, el )
 }

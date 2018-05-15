@@ -1,6 +1,8 @@
 package marketPlaceProcy
 
-import "encoding/json"
+import (
+  "encoding/json"
+)
 
 type ProxyPath struct {
   /*
@@ -19,9 +21,16 @@ type ProxyPath struct {
   ExpReg                          string                  `json:"expReg"`
 }
 func (el *ProxyPath) MarshalJSON() ([]byte, error) {
-  return json.Marshal(&ProxyPath{
-    Path: el.Path,
+  return json.Marshal(&struct{
+    Path                            string                  `json:"path"`
+    Method                          string                  `json:"method"`
+    ExpReg                          string                  `json:"expReg"`
+  }{
+    Path:   el.Path,
     Method: el.Method,
     ExpReg: el.ExpReg,
   })
+}
+func (el *ProxyPath) UnmarshalJSON(data []byte) error {
+  return json.Unmarshal( data, &el )
 }

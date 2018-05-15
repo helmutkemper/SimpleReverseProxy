@@ -13,6 +13,8 @@ import (
 )
 
 type ProxyConfig struct {
+  readyToJSon                     bool                    `json:"-"`
+
   /*
   Configuração do seelog
   @see https://github.com/cihub/seelog
@@ -303,6 +305,17 @@ func(el *ProxyConfig)Prepare(){
       el.Routes[ routesKey ].ProxyServers[ urlKey ].Enabled = true
     }
   }
+
+  FuncMap[ runtime.FuncForPC( reflect.ValueOf( el.ProxyError ).Pointer() ).Name() ] = el.ProxyError
+  FuncMap[ runtime.FuncForPC( reflect.ValueOf( el.ProxyNotFound ).Pointer() ).Name() ] = el.ProxyNotFound
+
+  for routesKey := range el.Routes{
+    FuncMap[ runtime.FuncForPC( reflect.ValueOf( el.Routes[ routesKey ].Domain.NotFoundHandle ).Pointer() ).Name() ] = el.Routes[ routesKey ].Domain.NotFoundHandle
+    FuncMap[ runtime.FuncForPC( reflect.ValueOf( el.Routes[ routesKey ].Domain.ErrorHandle ).Pointer() ).Name() ]    = el.Routes[ routesKey ].Domain.ErrorHandle
+    FuncMap[ runtime.FuncForPC( reflect.ValueOf( el.Routes[ routesKey ].Handle.Handle ).Pointer() ).Name() ]         = el.Routes[ routesKey ].Handle.Handle
+  }
+
+  el.readyToJSon = true
 }
 
 func(el *ProxyConfig)ProxyError(w ProxyResponseWriter, r *ProxyRequest) {
@@ -341,19 +354,67 @@ func(el *ProxyConfig)ProxyStatistics(w ProxyResponseWriter, r *ProxyRequest) {
 
   w.Write( byteJSon )
 }
-
 func (el *ProxyConfig) MarshalJSON() ([]byte, error) {
-  return json.Marshal(&ProxyConfig{
-    SeeLogConfig: el.SeeLogConfig,
-    DomainExpReg: el.DomainExpReg,
-    ErrorHandleAsString: runtime.FuncForPC( reflect.ValueOf( el.ErrorHandle ).Pointer() ).Name(),
-    NotFoundHandleAsString: runtime.FuncForPC( reflect.ValueOf( el.NotFoundHandle ).Pointer() ).Name(),
-    UniqueIdLength: el.UniqueIdLength,
-    ListenAndServe: el.ListenAndServe,
-    MaxLoopTry: el.MaxLoopTry,
+  if el.readyToJSon == false {
+    return []byte{}, errors.New( "call prepare() before json.Marshal() function" )
+  }
+  return json.Marshal(&struct{
+    SeeLogConfig                    string                  `json:"seeLogConfig"`
+    DomainExpReg                    string                  `json:"domainExpReg"`
+    ErrorHandleAsString             string                  `json:"ErrorHandle"`
+    NotFoundHandleAsString          string                  `json:"NotFoundHandle"`
+    UniqueIdLength                  int                     `json:"uniqueIdLength"`
+    ListenAndServe                  string                  `json:"listenAndServe"`
+    MaxLoopTry                      int                     `json:"maxLoopTry"`
+    ConsecutiveErrorsToDisable      int64                   `json:"consecutiveErrorsToDisable"`
+    TimeToKeepDisabled              time.Duration           `json:"timeToKeepDisabled"`
+    TimeToVerifyDisabled            time.Duration           `json:"timeToVerifyDisabled"`
+    Routes                          []ProxyRoute            `json:"routes"`
+  }{
+    SeeLogConfig:               el.SeeLogConfig,
+    DomainExpReg:               el.DomainExpReg,
+    ErrorHandleAsString:        runtime.FuncForPC( reflect.ValueOf( el.ErrorHandle ).Pointer() ).Name(),
+    NotFoundHandleAsString:     runtime.FuncForPC( reflect.ValueOf( el.NotFoundHandle ).Pointer() ).Name(),
+    UniqueIdLength:             el.UniqueIdLength,
+    ListenAndServe:             el.ListenAndServe,
+    MaxLoopTry:                 el.MaxLoopTry,
     ConsecutiveErrorsToDisable: el.ConsecutiveErrorsToDisable,
-    TimeToKeepDisabled: el.TimeToKeepDisabled,
-    TimeToVerifyDisabled: el.TimeToVerifyDisabled,
-    Routes: el.Routes,
+    TimeToKeepDisabled:         el.TimeToKeepDisabled,
+    TimeToVerifyDisabled:       el.TimeToVerifyDisabled,
+    Routes:                     el.Routes,
   })
+}
+func (el *ProxyConfig) UnmarshalJSON(data []byte) error {
+  type tmpStt struct{
+    SeeLogConfig                    string                  `json:"seeLogConfig"`
+    DomainExpReg                    string                  `json:"domainExpReg"`
+    ErrorHandleAsString             string                  `json:"ErrorHandle"`
+    NotFoundHandleAsString          string                  `json:"NotFoundHandle"`
+    UniqueIdLength                  int                     `json:"uniqueIdLength"`
+    ListenAndServe                  string                  `json:"listenAndServe"`
+    MaxLoopTry                      int                     `json:"maxLoopTry"`
+    ConsecutiveErrorsToDisable      int64                   `json:"consecutiveErrorsToDisable"`
+    TimeToKeepDisabled              time.Duration           `json:"timeToKeepDisabled"`
+    TimeToVerifyDisabled            time.Duration           `json:"timeToVerifyDisabled"`
+    Routes                          []ProxyRoute            `json:"routes"`
+  }
+  var tmp = tmpStt{}
+  err := json.Unmarshal( data, &tmp )
+  if err != nil {
+    return err
+  }
+
+  el.SeeLogConfig                = tmp.SeeLogConfig
+  el.DomainExpReg                = tmp.DomainExpReg
+  el.ErrorHandle                 = FuncMap[ tmp.ErrorHandleAsString ].( ProxyHandlerFunc )
+  el.NotFoundHandle              = FuncMap[ tmp.NotFoundHandleAsString ].( ProxyHandlerFunc )
+  el.UniqueIdLength              = tmp.UniqueIdLength
+  el.ListenAndServe              = tmp.ListenAndServe
+  el.MaxLoopTry                  = tmp.MaxLoopTry
+  el.ConsecutiveErrorsToDisable  = tmp.ConsecutiveErrorsToDisable
+  el.TimeToKeepDisabled          = tmp.TimeToKeepDisabled
+  el.TimeToVerifyDisabled        = tmp.TimeToVerifyDisabled
+  el.Routes                      = tmp.Routes
+
+  return nil
 }
