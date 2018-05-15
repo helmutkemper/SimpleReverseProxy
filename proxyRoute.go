@@ -52,6 +52,3 @@ func (el *ProxyRoute) MarshalJSON() ([]byte, error) {
     ProxyServers: el.ProxyServers,
   })
 }
-func (el *ProxyRoute) UnmarshalJSON(data []byte) error {
-  return json.Unmarshal( data, &el )
-}

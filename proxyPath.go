@@ -31,6 +31,3 @@ func (el *ProxyPath) MarshalJSON() ([]byte, error) {
     ExpReg: el.ExpReg,
   })
 }
-func (el *ProxyPath) UnmarshalJSON(data []byte) error {
-  return json.Unmarshal( data, &el )
-}

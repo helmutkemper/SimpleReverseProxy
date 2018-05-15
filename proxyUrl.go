@@ -90,6 +90,3 @@ func (el *ProxyUrl) MarshalJSON() ([]byte, error) {
     LastLoopOk:               el.LastLoopOk,
   })
 }
-func (el *ProxyUrl) UnmarshalJSON(data []byte) error {
-  return json.Unmarshal( data, el )
-}
