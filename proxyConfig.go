@@ -104,11 +104,14 @@ Esta função adiciona novas rotas ao proxy
   ]
 }
 */
-func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
-  // Esta função coloca a rota nova em 'ProxyNewRootConfig' e espera uma nova chamada em uma rota qualquer para que a
-  // nova rota tenha efeito. Isso é transparente para o usuário final, mas, a rota não pode entrar em vigor durante o
-  // processamento da rota anterior, ou o sistema trava, devido a mudança dos 'ponteiros'
 
+
+
+
+// Esta função coloca a rota nova em 'ProxyNewRootConfig' e espera uma nova chamada em uma rota qualquer para que a
+// nova rota tenha efeito. Isso é transparente para o usuário final, mas, a rota não pode entrar em vigor durante o
+// processamento da rota anterior, ou o sistema trava, devido a mudança dos 'ponteiros'
+func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
   var newRoute ProxyRoute
   var output = JSonOutStt{}
 
@@ -153,6 +156,46 @@ func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
 
   ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
   output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
+}
+
+func(el *ProxyConfig)RouteAddJs(newRoute ProxyRoute) string {
+  var err error
+
+  if len(ProxyNewRootConfig) != 0 {
+    ProxyRootConfig.Routes = ProxyNewRootConfig
+  }
+
+  if newRoute.ProxyEnable == false {
+    err = errors.New("this function only adds new routes that can be used in conjunction with the reverse proxy")
+    return err.Error()
+  }
+
+  if len( newRoute.ProxyServers ) == 0 {
+    err = errors.New("this function must receive at least one route that can be used in conjunction with the reverse proxy")
+    return err.Error()
+  }
+
+  for _, route := range newRoute.ProxyServers {
+    if route.Name == "" {
+      err = errors.New("every route must have a name assigned to it")
+      return err.Error()
+    }
+
+    _, err = url.Parse(route.Url)
+    if err != nil {
+      err = errors.New("the route of name '" + route.Name + "' presented the following error: " + err.Error())
+      return err.Error()
+    }
+  }
+
+  // Habilita todas as rotas, pois, o padrão do go é false
+  for urlKey := range newRoute.ProxyServers {
+    newRoute.ProxyServers[ urlKey ].Enabled = true
+  }
+
+  ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+
+  return ""
 }
 
 /*
