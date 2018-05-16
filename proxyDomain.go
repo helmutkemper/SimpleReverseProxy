@@ -62,8 +62,14 @@ func (el *ProxyDomain) UnmarshalJSON(data []byte) error {
     return err
   }
 
-  el.ErrorHandle                 = FuncMap[ tmp.ErrorHandleAsString ].( ProxyHandlerFunc )
-  el.NotFoundHandle              = FuncMap[ tmp.NotFoundHandleAsString ].( ProxyHandlerFunc )
+  if tmp.ErrorHandleAsString != "" {
+    el.ErrorHandle = FuncMap[ tmp.ErrorHandleAsString ].( ProxyHandlerFunc )
+  }
+
+  if tmp.NotFoundHandleAsString != "" {
+    el.NotFoundHandle = FuncMap[ tmp.NotFoundHandleAsString ].(ProxyHandlerFunc)
+  }
+
   el.SubDomain                   = tmp.SubDomain
   el.Domain                      = tmp.Domain
   el.Port                        = tmp.Port
