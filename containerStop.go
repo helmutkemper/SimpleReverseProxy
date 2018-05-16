@@ -2,7 +2,7 @@ package marketPlaceProcy
 
 import (
   "golang.org/x/net/context"
-  "github.com/docker/docker/client"
+  "github.com/helmutkemper/moby/client"
 )
 
 type ContainerStopDataIn struct {

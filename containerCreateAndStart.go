@@ -3,10 +3,10 @@ package marketPlaceProcy
 import (
   "bytes"
   "golang.org/x/net/context"
-  "github.com/docker/docker/client"
-  "github.com/docker/docker/api/types"
-  "github.com/docker/docker/api/types/container"
-  "github.com/docker/docker/api/types/network"
+  "github.com/helmutkemper/moby/client"
+  "github.com/helmutkemper/moby/api/types"
+  "github.com/helmutkemper/moby/api/types/container"
+  "github.com/helmutkemper/moby/api/types/network"
 )
 
 type ContainerDockerConfig   container.Config
