@@ -37,30 +37,7 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   request.ExpRegMatches = make( map[string]string )
   queryString := make( map[string][]string )
 
-  // Trata o domínio e o separa
-  // fixme: rever isto. isto é necessário? deixa o sistema mais lento
-  matched, err := regexp.MatchString(ProxyRootConfig.DomainExpReg, r.Host)
-  if err != nil {
-    // há um erro grave na expreg do domínio
-    log.Debugf( "The regular expression in charge of identifying the domain data has a serious error and the reverse proxy system can not continue. ExpReg: '/%v/' Error: %v", ProxyRootConfig.DomainExpReg, err.Error() )
-    log.Criticalf( "The regular expression in charge of identifying the domain data has a serious error and the reverse proxy system can not continue. Error: %v", err.Error() )
-    return
-  }
-
-  if matched == true {
-    re := regexp.MustCompile(ProxyRootConfig.DomainExpReg)
-
-    request.SubDomain = re.ReplaceAllString(r.Host,"${subDomain}")
-    request.Domain = re.ReplaceAllString(r.Host, "${domain}")
-    request.Port = re.ReplaceAllString(r.Host, "${port}")
-  } else {
-    // a equação de domínio não bateu
-    log.Warnf( "Regular domain expression did not hit domain %v", r.Host )
-    return
-  }
-
-  // trata a query string
-  // fixme: isto é necessário aqui? deixa o sistema mais lento
+  // fixme: host query string enable aqui
   queryString, err = url.ParseQuery(r.URL.RawQuery)
   if err != nil {
     // há um erro na query string
@@ -68,6 +45,27 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   }
 
   request.QueryString = queryString
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Trata todas as rotas
   for keyRoute, route := range ProxyRootConfig.Routes {
