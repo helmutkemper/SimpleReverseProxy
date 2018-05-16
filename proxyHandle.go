@@ -58,7 +58,10 @@ func (el *ProxyHandle) UnmarshalJSON(data []byte) error {
     return err
   }
 
-  el.Handle             = FuncMap[ tmp.HandleAsString ].( ProxyHandlerFunc )
+  if tmp.HandleAsString != "" {
+    el.Handle = FuncMap[ tmp.HandleAsString ].(ProxyHandlerFunc)
+  }
+
   el.Name               = tmp.Name
   el.TotalTime          = tmp.TotalTime
   el.UsedSuccessfully   = tmp.UsedSuccessfully

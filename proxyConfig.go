@@ -449,8 +449,15 @@ func (el *ProxyConfig) UnmarshalJSON(data []byte) error {
 
   el.SeeLogConfig                = tmp.SeeLogConfig
   el.DomainExpReg                = tmp.DomainExpReg
-  el.ErrorHandle                 = FuncMap[ tmp.ErrorHandleAsString ].( ProxyHandlerFunc )
-  el.NotFoundHandle              = FuncMap[ tmp.NotFoundHandleAsString ].( ProxyHandlerFunc )
+
+  if tmp.ErrorHandleAsString != "" {
+    el.ErrorHandle = FuncMap[ tmp.ErrorHandleAsString ].(ProxyHandlerFunc)
+  }
+
+  if tmp.NotFoundHandleAsString != "" {
+    el.NotFoundHandle = FuncMap[ tmp.NotFoundHandleAsString ].(ProxyHandlerFunc)
+  }
+
   el.UniqueIdLength              = tmp.UniqueIdLength
   el.ListenAndServe              = tmp.ListenAndServe
   el.MaxLoopTry                  = tmp.MaxLoopTry
