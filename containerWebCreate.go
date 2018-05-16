@@ -2,9 +2,9 @@ package marketPlaceProcy
 
 import (
   "golang.org/x/net/context"
-  "github.com/docker/docker/client"
-  "github.com/docker/docker/api/types/container"
-  "github.com/docker/docker/api/types/network"
+  "github.com/helmutkemper/moby/client"
+  "github.com/helmutkemper/moby/api/types/container"
+  "github.com/helmutkemper/moby/api/types/network"
 )
 
 type ContainerCreateDataIn struct {

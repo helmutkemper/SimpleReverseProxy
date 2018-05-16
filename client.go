@@ -1,7 +1,7 @@
 package marketPlaceProcy
 
 import (
-  "github.com/docker/docker/client"
+  "github.com/helmutkemper/moby/client"
   "context"
   "net/http"
 )
