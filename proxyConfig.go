@@ -10,6 +10,7 @@ import (
   "time"
   "reflect"
   "runtime"
+  "strings"
 )
 
 type ProxyConfig struct {
@@ -193,7 +194,31 @@ func(el *ProxyConfig)RouteAddJs(newRoute ProxyRoute) string {
     newRoute.ProxyServers[ urlKey ].Enabled = true
   }
 
-  ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+  //if newRoute.Path.Method == "" {
+  //  newRoute.Path.Method = "ALL"
+  //}
+
+  var separatorHost = ""
+  var separatorPath = ""
+  if !strings.HasSuffix( newRoute.Domain.Host, "/" ) {
+    separatorHost = "/"
+  }
+
+  if !strings.HasPrefix( newRoute.Path.Path, "/" ) {
+    separatorPath = "/"
+  }
+
+
+  if newRoute.Path.Method == "" {
+    var list = []string{ "GET", "POST", "DELETE", "PUT", "HEAD", "PATCH", "OPTIONS" }
+    for _, v := range list{
+      ProxyRadix.Insert(newRoute.Domain.Host + separatorHost + v + separatorPath+newRoute.Path.Path, newRoute)
+    }
+  } else {
+    ProxyRadix.Insert(newRoute.Domain.Host + separatorHost + newRoute.Path.Method + separatorPath + newRoute.Path.Path, newRoute)
+  }
+
+  //ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
 
   return ""
 }
