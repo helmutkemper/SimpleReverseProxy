@@ -11,6 +11,7 @@ import (
   "reflect"
   "runtime"
   "strings"
+  "github.com/helmutkemper/go-radix"
 )
 
 type ProxyConfig struct {
@@ -156,6 +157,9 @@ func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
   }
 
   ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+
+  el.RoutePrepare()
+  
   output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
 }
 
@@ -194,31 +198,9 @@ func(el *ProxyConfig)RouteAddJs(newRoute ProxyRoute) string {
     newRoute.ProxyServers[ urlKey ].Enabled = true
   }
 
-  //if newRoute.Path.Method == "" {
-  //  newRoute.Path.Method = "ALL"
-  //}
+  ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
 
-  var separatorHost = ""
-  var separatorPath = ""
-  if !strings.HasSuffix( newRoute.Domain.Host, "/" ) {
-    separatorHost = "/"
-  }
-
-  if !strings.HasPrefix( newRoute.Path.Path, "/" ) {
-    separatorPath = "/"
-  }
-
-
-  if newRoute.Path.Method == "" {
-    var list = []string{ "GET", "POST", "DELETE", "PUT", "HEAD", "PATCH", "OPTIONS" }
-    for _, v := range list{
-      ProxyRadix.Insert(newRoute.Domain.Host + separatorHost + v + separatorPath+newRoute.Path.Path, newRoute)
-    }
-  } else {
-    ProxyRadix.Insert(newRoute.Domain.Host + separatorHost + newRoute.Path.Method + separatorPath + newRoute.Path.Path, newRoute)
-  }
-
-  //ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+  el.RoutePrepare()
 
   return ""
 }
@@ -229,6 +211,33 @@ Esta função elimina rotas do proxy
     "name": "name_of_route"
 }
 */
+func(el *ProxyConfig)RoutePrepare() {
+
+  ProxyRadix = radix.New()
+
+  for _, newRoute := range ProxyNewRootConfig {
+
+    var separatorHost= ""
+    var separatorPath= ""
+    if !strings.HasSuffix(newRoute.Domain.Host, "/") {
+      separatorHost = "/"
+    }
+
+    if !strings.HasPrefix(newRoute.Path.Path, "/") {
+      separatorPath = "/"
+    }
+
+    if newRoute.Path.Method == "" {
+      var list= []string{"GET", "POST", "DELETE", "PUT", "HEAD", "PATCH", "OPTIONS"}
+      for _, v := range list {
+        ProxyRadix.Insert(newRoute.Domain.Host+separatorHost+v+separatorPath+newRoute.Path.Path, newRoute)
+      }
+    } else {
+      ProxyRadix.Insert(newRoute.Domain.Host+separatorHost+newRoute.Path.Method+separatorPath+newRoute.Path.Path, newRoute)
+    }
+  }
+}
+
 func(el *ProxyConfig)RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
   // Esta função coloca a rota nova em 'ProxyNewRootConfig' e espera uma nova chamada em uma rota qualquer para que a
   // nova rota tenha efeito. Isso é transparente para o usuário final, mas, a rota não pode entrar em vigor durante o
@@ -275,6 +284,8 @@ func(el *ProxyConfig)RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
     return
   }
   w.Write(b)
+
+  el.RoutePrepare()
 
   output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
 }
@@ -384,6 +395,8 @@ func(el *ProxyConfig)Prepare(){
   }
 
   el.readyToJSon = true
+
+  el.RoutePrepare()
 }
 
 func(el *ProxyConfig)ProxyError(w ProxyResponseWriter, r *ProxyRequest) {
