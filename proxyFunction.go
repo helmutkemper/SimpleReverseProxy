@@ -4,6 +4,7 @@ import (
   "net/http"
   "net/url"
   log "github.com/helmutkemper/seelog"
+  "fmt"
 )
 
 func ProxyFunc(w http.ResponseWriter, r *http.Request) {
@@ -42,13 +43,23 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   */
 
   // Trata todas as rotas
-
   var method = r.Method
   if method == "" {
     method = "ALL"
   }
 
-  var data, match = ProxyRadix.Get( r.Host + "/" + method + r.URL.Path )
+  fmt.Printf( "method: %v\n", r.Method )
+  fmt.Printf( "radix: %v\n", r.Host + "/" + method + r.URL.Path )
+
+  var data, match = ProxyRadix.Get( r.Host )
+  if match == true {
+    match = data.(ProxyRoute).ProxyEnable
+  }
+
+  if match == false {
+    data, match = ProxyRadix.Get(r.Host + "/" + method + r.URL.Path)
+  }
+
   if match == true {
     // a rota foi encontrada
 

@@ -227,13 +227,21 @@ func(el *ProxyConfig)RoutePrepare() {
       separatorPath = "/"
     }
 
-    if newRoute.Path.Method == "" {
-      var list= []string{"GET", "POST", "DELETE", "PUT", "HEAD", "PATCH", "OPTIONS"}
-      for _, v := range list {
-        ProxyRadix.Insert(newRoute.Domain.Host+separatorHost+v+separatorPath+newRoute.Path.Path, newRoute)
-      }
+    if newRoute.ProxyEnable == true {
+
+      ProxyRadix.Insert(newRoute.Domain.Host, newRoute)
+
     } else {
-      ProxyRadix.Insert(newRoute.Domain.Host+separatorHost+newRoute.Path.Method+separatorPath+newRoute.Path.Path, newRoute)
+
+      if newRoute.Path.Method == "" {
+        var list = []string{"GET", "POST", "DELETE", "PUT", "HEAD", "PATCH", "OPTIONS"}
+        for _, v := range list {
+          ProxyRadix.Insert(newRoute.Domain.Host+separatorHost+v+separatorPath+newRoute.Path.Path, newRoute)
+        }
+      } else {
+        ProxyRadix.Insert(newRoute.Domain.Host+separatorHost+newRoute.Path.Method+separatorPath+newRoute.Path.Path, newRoute)
+      }
+
     }
   }
 }
