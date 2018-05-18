@@ -34,6 +34,8 @@ type ProxyRoute struct {
   Lista de todas as URLs para os containers com a aplicação
   */
   ProxyServers                    []ProxyUrl              `json:"proxyServers"`
+
+  Index                           int                     `json:"index"`
 }
 func (el *ProxyRoute) MarshalJSON() ([]byte, error) {
   return json.Marshal(&struct{

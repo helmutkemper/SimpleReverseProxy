@@ -163,7 +163,7 @@ func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
   output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
 }
 
-func(el *ProxyConfig)RouteAddJs(newRoute ProxyRoute) string {
+func(el *ProxyConfig)RouteAddStt(newRoute ProxyRoute) string {
   var err error
 
   if len(ProxyNewRootConfig) != 0 {
@@ -197,6 +197,9 @@ func(el *ProxyConfig)RouteAddJs(newRoute ProxyRoute) string {
   for urlKey := range newRoute.ProxyServers {
     newRoute.ProxyServers[ urlKey ].Enabled = true
   }
+
+  // O index é usado como ponteiro para algumas funções e contadores
+  newRoute.Index = len( ProxyRootConfig.Routes )
 
   ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
 
