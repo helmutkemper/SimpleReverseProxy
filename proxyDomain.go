@@ -20,6 +20,9 @@ type ProxyDomain struct {
 
   Host                            string                  `json:"host"`
 
+  Path                            string                  `json:"path"`
+  PathExpReg                      string                  `json:"pathExpReg"`
+
   QueryStringEnable               bool                    `json:"queryStringEnable"`
 }
 func (el *ProxyDomain) MarshalJSON() ([]byte, error) {
@@ -27,12 +30,14 @@ func (el *ProxyDomain) MarshalJSON() ([]byte, error) {
     ErrorHandleAsString             string                  `json:"errorHandleAsString"`
     NotFoundHandleAsString          string                  `json:"notFoundHandleAsString"`
     Host                            string                  `json:"host"`
-    QueryStringEnable               bool                    `json:"queryStringEnable"`
+    Path                            string                  `json:"path"`
+    PathExpReg                      string                  `json:"pathExpReg"`
   }{
     ErrorHandleAsString:    runtime.FuncForPC( reflect.ValueOf( el.ErrorHandle ).Pointer() ).Name(),
     NotFoundHandleAsString: runtime.FuncForPC( reflect.ValueOf( el.NotFoundHandle ).Pointer() ).Name(),
     Host:                   el.Host,
-    QueryStringEnable:      el.QueryStringEnable,
+    Path:                   el.Path,
+    PathExpReg:             el.PathExpReg,
   })
 }
 func (el *ProxyDomain) UnmarshalJSON(data []byte) error {
@@ -40,7 +45,8 @@ func (el *ProxyDomain) UnmarshalJSON(data []byte) error {
     ErrorHandleAsString             string                  `json:"errorHandleAsString"`
     NotFoundHandleAsString          string                  `json:"notFoundHandleAsString"`
     Host                            string                  `json:"host"`
-    QueryStringEnable               bool                    `json:"queryStringEnable"`
+    Path                            string                  `json:"path"`
+    PathExpReg                      string                  `json:"pathExpReg"`
   }
   var tmp = tmpStt{}
   err := json.Unmarshal( data, &tmp )
@@ -56,8 +62,9 @@ func (el *ProxyDomain) UnmarshalJSON(data []byte) error {
     el.NotFoundHandle = FuncMap[ tmp.NotFoundHandleAsString ].(ProxyHandlerFunc)
   }
 
-  el.Host              = tmp.Host
-  el.QueryStringEnable = tmp.QueryStringEnable
+  el.Host       = tmp.Host
+  el.Path       = tmp.Path
+  el.PathExpReg = tmp.PathExpReg
 
   return nil
 }
