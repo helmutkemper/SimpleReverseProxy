@@ -163,7 +163,7 @@ func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
   output.ToOutput(len( ProxyNewRootConfig ), nil, ProxyNewRootConfig, w)
 }
 
-func(el *ProxyConfig)RouteAddStt(newRoute ProxyRoute) string {
+func(el *ProxyConfig)AddRouteToProxyStt(newRoute ProxyRoute) string {
   var err error
 
   if len(ProxyNewRootConfig) != 0 {
@@ -177,6 +177,51 @@ func(el *ProxyConfig)RouteAddStt(newRoute ProxyRoute) string {
 
   if len( newRoute.ProxyServers ) == 0 {
     err = errors.New("this function must receive at least one route that can be used in conjunction with the reverse proxy")
+    return err.Error()
+  }
+
+  for _, route := range newRoute.ProxyServers {
+    if route.Name == "" {
+      err = errors.New("every route must have a name assigned to it")
+      return err.Error()
+    }
+
+    _, err = url.Parse(route.Url)
+    if err != nil {
+      err = errors.New("the route of name '" + route.Name + "' presented the following error: " + err.Error())
+      return err.Error()
+    }
+  }
+
+  // Habilita todas as rotas, pois, o padrão do go é false
+  for urlKey := range newRoute.ProxyServers {
+    newRoute.ProxyServers[ urlKey ].Enabled = true
+  }
+
+  // O index é usado como ponteiro para algumas funções e contadores
+  newRoute.Index = len( ProxyRootConfig.Routes )
+
+  ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+
+  el.RoutePrepare()
+
+  return ""
+}
+
+func(el *ProxyConfig)AddRouteFromFuncStt(newRoute ProxyRoute) string {
+  var err error
+
+  if len(ProxyNewRootConfig) != 0 {
+    ProxyRootConfig.Routes = ProxyNewRootConfig
+  }
+
+  if newRoute.ProxyEnable == true {
+    err = errors.New("this function only adds new routes that can't be used in conjunction with the reverse proxy")
+    return err.Error()
+  }
+
+  if len( newRoute.ProxyServers ) != 0 { //fixme: colocar um erro aqui
+    err = errors.New("fixme: colocar um erro aqui")
     return err.Error()
   }
 
