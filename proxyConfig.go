@@ -562,3 +562,7 @@ func (el *ProxyConfig) UnmarshalJSON(data []byte) error {
 
   return nil
 }
+
+func init(){
+  ProxyRootConfig.Routes = ProxyNewRootConfig
+}
