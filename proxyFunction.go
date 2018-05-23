@@ -22,7 +22,8 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   }
 
   var request = &ProxyRequest{
-    Request: r,
+    R: r,
+    //Request: r,
   }
 
   start := NetworkTime.Now()

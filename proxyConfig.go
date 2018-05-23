@@ -121,7 +121,7 @@ func(el *ProxyConfig)RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
     ProxyRootConfig.Routes = ProxyNewRootConfig
   }
 
-  err := json.NewDecoder(r.Body).Decode(&newRoute)
+  err := json.NewDecoder(r.R.Body).Decode(&newRoute)
 
   if err != nil {
     output.ToOutput(0, err, []int{}, w)
@@ -302,7 +302,7 @@ func(el *ProxyConfig)RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
   var newRoute ProxyRoute
   var output = JSonOutStt{}
 
-  err := json.NewDecoder(r.Body).Decode(&newRoute)
+  err := json.NewDecoder(r.R.Body).Decode(&newRoute)
 
   if err != nil {
     output.ToOutput(0, err, []int{}, w)

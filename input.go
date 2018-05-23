@@ -8,12 +8,12 @@ import (
 )
 
 func Input(r *ProxyRequest, inData interface{}) (error, string) {
-  body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+  body, err := ioutil.ReadAll(io.LimitReader(r.R.Body, 1048576))
   if err != nil {
     return err, ""
   }
 
-  err = r.Body.Close()
+  err = r.R.Body.Close()
   if err != nil {
     return err, ""
   }
