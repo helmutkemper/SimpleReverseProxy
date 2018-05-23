@@ -259,10 +259,12 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
 
               request.ExpRegMatches[v] = re.ReplaceAllString(r.URL.Path, `${`+v+`}`)
             }
+          } else {
+            // fixme: page not found
+            return
           }
         }
 
-        
         data.(ProxyRoute).Handle.Handle(responseWriter, request)
         ProxyRootConfig.Routes[ data.(ProxyRoute).Index ].Handle.TotalTime += NetworkTime.Since(start) * time.Nanosecond
         ProxyRootConfig.Routes[ data.(ProxyRoute).Index ].Handle.UsedSuccessfully += 1

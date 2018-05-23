@@ -13,7 +13,7 @@ type MetaJSonOutStt struct{
   Previous          string                `json:"Previous"`
   TotalCount        int                   `json:"TotalCount"`
   Success           bool                  `json:"Success"`
-  Error             string                `json:"Error"`
+  Error             interface{}           `json:"Error"`
 }
 
 type JSonOutStt struct{
@@ -22,14 +22,14 @@ type JSonOutStt struct{
   geoJSonHasOutput  bool                  `json:"-"`
 }
 
-func( JSonOutAStt *JSonOutStt ) ToOutput( totalCountAInt int, errorAErr error, dataATfc interface{}, w http.ResponseWriter ) {
+func( JSonOutAStt *JSonOutStt ) ToOutput( totalCountAInt int, errorAErr interface{}, dataATfc interface{}, w http.ResponseWriter ) {
   w.Header().Set( "Content-Type", "application/json; charset=utf-8" )
 
   if errorAErr != nil {
     w.WriteHeader(http.StatusInternalServerError)
 
     JSonOutAStt.Meta = MetaJSonOutStt{
-      Error: errorAErr.Error(),
+      Error: errorAErr,
       Limit: 0,
       Next:  "",
       Offset:0,

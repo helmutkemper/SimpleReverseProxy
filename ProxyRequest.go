@@ -3,7 +3,7 @@ package SimpleReverseProxy
 import "net/http"
 
 type ProxyRequest struct {
-  *http.Request
+  R                               *http.Request
   QueryString                     map[string][]string
   ExpRegMatches                   map[string]string
   SubDomain                       string
