@@ -1,10 +1,12 @@
-package marketPlaceProcy
+package SimpleReverseProxy
 
 import (
   "net/http"
   "net/url"
   log "github.com/helmutkemper/seelog"
   "time"
+  "strings"
+  "regexp"
 )
 
 func ProxyFunc(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +29,11 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
 
   var handleName string
 
-  /*
-  fixme: query string habilitada por host para maior desempenho
+
   request.ExpRegMatches = make( map[string]string )
   queryString := make( map[string][]string )
 
-
+  var err error
   queryString, err = url.ParseQuery(r.URL.RawQuery)
   if err != nil {
     // há um erro na query string
@@ -40,7 +41,7 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   }
 
   request.QueryString = queryString
-  */
+
 
   // Trata todas as rotas
   var method = r.Method
@@ -54,7 +55,9 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   }
 
   if match == false {
-    data, match = ProxyRadix.Get(r.Host + "/" + method + r.URL.Path)
+    var pathTmp = strings.Split( r.URL.Path, "/" )
+    var path = "/" + pathTmp[1]
+    data, match = ProxyRadix.Get(r.Host + "/" + method + path)
   }
 
   if match == true {
@@ -240,6 +243,26 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
     } else {
 
       if data.(ProxyRoute).Handle.Handle != nil {
+
+
+        if data.(ProxyRoute).Path.ExpReg != "" {
+          matched, err := regexp.MatchString(data.(ProxyRoute).Path.ExpReg, r.URL.Path)
+          if err != nil {
+            // fixme: colocar um erro aqui
+          }
+          if matched == true {
+            re := regexp.MustCompile(data.(ProxyRoute).Path.ExpReg)
+            for k, v := range re.SubexpNames() {
+              if k == 0 || v == "" {
+                continue
+              }
+
+              request.ExpRegMatches[v] = re.ReplaceAllString(r.URL.Path, `${`+v+`}`)
+            }
+          }
+        }
+
+        
         data.(ProxyRoute).Handle.Handle(responseWriter, request)
         ProxyRootConfig.Routes[ data.(ProxyRoute).Index ].Handle.TotalTime += NetworkTime.Since(start) * time.Nanosecond
         ProxyRootConfig.Routes[ data.(ProxyRoute).Index ].Handle.UsedSuccessfully += 1

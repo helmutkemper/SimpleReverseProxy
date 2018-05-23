@@ -1,4 +1,4 @@
-package marketPlaceProcy
+package SimpleReverseProxy
 
 import(
   "github.com/helmutkemper/go-radix"
