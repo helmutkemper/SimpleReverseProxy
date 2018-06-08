@@ -53,12 +53,21 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
   var data, match = ProxyRadix.Get( r.Host )
   if match == true {
     match = data.(ProxyRoute).ProxyEnable
+  } else {
+    data, match = ProxyRadix.Get( "" )
+    if match == true {
+      match = data.(ProxyRoute).ProxyEnable
+    }
   }
 
   if match == false {
     var pathTmp = strings.Split( r.URL.Path, "/" )
     var path = "/" + pathTmp[1]
     data, match = ProxyRadix.Get(r.Host + "/" + method + path)
+
+    if match == false {
+      data, match = ProxyRadix.Get("/" + method + path)
+    }
   }
 
   if match == true {
