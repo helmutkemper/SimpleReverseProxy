@@ -43,7 +43,6 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
 
   request.QueryString = queryString
 
-
   // Trata todas as rotas
   var method = r.Method
   if method == "" {
