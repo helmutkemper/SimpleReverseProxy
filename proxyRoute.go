@@ -11,6 +11,11 @@ type ProxyRoute struct {
   Name                            string                  `json:"name"`
 
   /*
+  Description of domain
+  */
+  Description                     string                  `json:"description"`
+  
+  /*
   Dados do domínio
   */
   Domain                          ProxyDomain             `json:"domain"`
