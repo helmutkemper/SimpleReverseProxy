@@ -28,6 +28,11 @@ func( JSonOutAStt *JSonOutStt ) ToOutput( totalCountAInt int, errorAErr interfac
   if errorAErr != nil {
     w.WriteHeader(http.StatusInternalServerError)
 
+    switch converted:= errorAErr.(type) {
+    case error:
+      errorAErr = converted.Error()
+    }
+
     JSonOutAStt.Meta = MetaJSonOutStt{
       Error: errorAErr,
       Limit: 0,
