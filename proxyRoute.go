@@ -11,11 +11,6 @@ type ProxyRoute struct {
   Name                            string                  `json:"name"`
 
   /*
-  Description of domain
-  */
-  Description                     string                  `json:"description"`
-  
-  /*
   Dados do domínio
   */
   Domain                          ProxyDomain             `json:"domain"`
@@ -46,7 +41,7 @@ func (el *ProxyRoute) MarshalJSON() ([]byte, error) {
   return json.Marshal(&struct{
     Name                            string                  `json:"name"`
     Domain                          ProxyDomain             `json:"domain"`
-    Path                            ProxyPath                `json:"path"`
+    Path                            ProxyPath               `json:"path"`
     Handle                          ProxyHandle             `json:"handle"`
     ProxyEnable                     bool                    `json:"proxyEnable"`
     ProxyServers                    []ProxyUrl              `json:"proxyServers"`
