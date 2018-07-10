@@ -481,7 +481,7 @@ func(el *ProxyConfig)VerifyDisabled(){
   }
 }
 
-func(el *ProxyConfig)ProxyStatistics(w ProxyResponseWriter, r *ProxyRequest) {
+func(el *ProxyConfig)ProxyRoutes(w ProxyResponseWriter, r *ProxyRequest) {
 
   byteJSon, err := json.Marshal( ProxyRootConfig.Routes )
   if err != nil {
