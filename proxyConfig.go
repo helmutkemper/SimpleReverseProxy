@@ -114,8 +114,8 @@ func (el *ProxyConfig) RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
 	var newRoute ProxyRoute
 	var output = JSonOutStt{}
 
-	if len(ProxyNewRootConfig) != 0 {
-		ProxyRootConfig.Routes = ProxyNewRootConfig
+	if ProxyNewRootConfig.Len() != 0 {
+		ProxyRootConfig.Routes = ProxyNewRootConfig.Get()
 	}
 
 	err := json.NewDecoder(r.R.Body).Decode(&newRoute)
@@ -153,18 +153,19 @@ func (el *ProxyConfig) RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
 		newRoute.ProxyServers[urlKey].Enabled = true
 	}
 
-	ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+	ProxyNewRootConfig.Set(ProxyRootConfig.Routes)
+	ProxyNewRootConfig.Append(newRoute)
 
 	el.RoutePrepare()
 
-	output.ToOutput(len(ProxyNewRootConfig), nil, ProxyNewRootConfig, w)
+	output.ToOutput(ProxyNewRootConfig.Len(), nil, ProxyNewRootConfig, w)
 }
 
 func (el *ProxyConfig) AddRouteToProxyStt(newRoute ProxyRoute) error {
 	var err error
 
-	if len(ProxyNewRootConfig) != 0 {
-		ProxyRootConfig.Routes = ProxyNewRootConfig
+	if ProxyNewRootConfig.Len() != 0 {
+		ProxyRootConfig.Routes = ProxyNewRootConfig.Get()
 	}
 
 	if newRoute.ProxyEnable == false {
@@ -194,7 +195,8 @@ func (el *ProxyConfig) AddRouteToProxyStt(newRoute ProxyRoute) error {
 	// O index é usado como ponteiro para algumas funções e contadores
 	newRoute.Index = len(ProxyRootConfig.Routes)
 
-	ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+	ProxyNewRootConfig.Set(ProxyRootConfig.Routes)
+	ProxyNewRootConfig.Append(newRoute)
 
 	el.RoutePrepare()
 
@@ -204,8 +206,8 @@ func (el *ProxyConfig) AddRouteToProxyStt(newRoute ProxyRoute) error {
 func (el *ProxyConfig) AddRouteFromFuncStt(newRoute ProxyRoute) error {
 	var err error
 
-	if len(ProxyNewRootConfig) != 0 {
-		ProxyRootConfig.Routes = ProxyNewRootConfig
+	if ProxyNewRootConfig.Len() != 0 {
+		ProxyRootConfig.Routes = ProxyNewRootConfig.Get()
 	}
 
 	if newRoute.ProxyEnable == true {
@@ -235,7 +237,8 @@ func (el *ProxyConfig) AddRouteFromFuncStt(newRoute ProxyRoute) error {
 	// O index é usado como ponteiro para algumas funções e contadores
 	newRoute.Index = len(ProxyRootConfig.Routes)
 
-	ProxyNewRootConfig = append(ProxyRootConfig.Routes, newRoute)
+	ProxyNewRootConfig.Set(ProxyRootConfig.Routes)
+	ProxyNewRootConfig.Append(newRoute)
 
 	el.RoutePrepare()
 
@@ -252,7 +255,7 @@ func (el *ProxyConfig) RoutePrepare() {
 
 	ProxyRadix = radix.New()
 
-	for _, newRoute := range ProxyNewRootConfig {
+	for _, newRoute := range ProxyNewRootConfig.Get() {
 
 		var separatorHost = ""
 		var separatorPath = ""
@@ -310,11 +313,11 @@ func (el *ProxyConfig) RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
 
 	if nameFound == true {
 		if i == 0 {
-			ProxyNewRootConfig = ProxyRootConfig.Routes[1:]
+			ProxyNewRootConfig.Set(ProxyRootConfig.Routes[1:])
 		} else if i == len(ProxyRootConfig.Routes)-1 {
-			ProxyNewRootConfig = ProxyRootConfig.Routes[:len(ProxyRootConfig.Routes)-1]
+			ProxyNewRootConfig.Set(ProxyRootConfig.Routes[:len(ProxyRootConfig.Routes)-1])
 		} else {
-			ProxyNewRootConfig = append(ProxyRootConfig.Routes[0:i], ProxyRootConfig.Routes[i+1:]...)
+			ProxyNewRootConfig.Set(append(ProxyRootConfig.Routes[0:i], ProxyRootConfig.Routes[i+1:]...))
 		}
 	}
 
@@ -332,7 +335,7 @@ func (el *ProxyConfig) RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
 
 	el.RoutePrepare()
 
-	output.ToOutput(len(ProxyNewRootConfig), nil, ProxyNewRootConfig, w)
+	output.ToOutput(ProxyNewRootConfig.Len(), nil, ProxyNewRootConfig, w)
 }
 
 // Inicializa algumas variáveis
@@ -553,5 +556,5 @@ func (el *ProxyConfig) UnmarshalJSON(data []byte) error {
 }
 
 func init() {
-	ProxyRootConfig.Routes = ProxyNewRootConfig
+	ProxyRootConfig.Routes = ProxyNewRootConfig.Get()
 }
