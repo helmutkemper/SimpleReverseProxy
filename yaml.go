@@ -21,8 +21,11 @@ type configProxyServerNameAndHost struct {
 }
 
 type configProxy struct {
-	Host   string                         `yaml:"host"`
-	Server []configProxyServerNameAndHost `yaml:"server"`
+	Host              string                         `yaml:"host"`
+	Path              string                         `yaml:"path"`
+	PathExpReg        string                         `yaml:"pathExpReg"`
+	QueryStringEnable bool                           `yaml:"queryStringEnable"`
+	Server            []configProxyServerNameAndHost `yaml:"server"`
 }
 
 type configStaticFolder struct {
@@ -96,9 +99,9 @@ func (el *Config) Unmarshal(filePath string) error {
 	}
 
 	for proxyName, proxyConfig := range el.ReverseProxy.Proxy {
-		if proxyConfig.Host == "" {
-			return errors.New("reverseProxy > proxy > " + proxyName + " > host not found. " + KSiteErrorInformation)
-		}
+		//if proxyConfig.Host == "" {
+		//	return errors.New("reverseProxy > proxy > " + proxyName + " > host not found. " + KSiteErrorInformation)
+		//}
 
 		if len(proxyConfig.Server) == 0 {
 			return errors.New("reverseProxy > proxy > " + proxyName + " > server not found. " + KSiteErrorInformation)
