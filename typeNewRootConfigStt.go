@@ -2,20 +2,20 @@ package SimpleReverseProxy
 
 import "sync"
 
-type NewRootConfigStt struct {
+type ProxyRouteAStt struct {
 	l    sync.Mutex
 	a    []ProxyRoute
 	init bool
 }
 
-func (el *NewRootConfigStt) Clear() {
+func (el *ProxyRouteAStt) Clear() {
 	defer el.l.Unlock()
 
 	el.l.Lock()
 	el.init = true
 	el.a = make([]ProxyRoute, 0)
 }
-func (el *NewRootConfigStt) Append(v ProxyRoute) {
+func (el *ProxyRouteAStt) Append(v ProxyRoute) {
 	defer el.l.Unlock()
 
 	el.l.Lock()
@@ -26,25 +26,25 @@ func (el *NewRootConfigStt) Append(v ProxyRoute) {
 
 	el.a = append(el.a, v)
 }
-func (el *NewRootConfigStt) Len() int {
+func (el *ProxyRouteAStt) Len() int {
 	defer el.l.Unlock()
 
 	el.l.Lock()
 	return len(el.a)
 }
-func (el *NewRootConfigStt) GetKey(i int) ProxyRoute {
+func (el *ProxyRouteAStt) GetKey(i int) ProxyRoute {
 	defer el.l.Unlock()
 
 	el.l.Lock()
 	return el.a[i]
 }
-func (el *NewRootConfigStt) Get() []ProxyRoute {
+func (el *ProxyRouteAStt) Get() []ProxyRoute {
 	defer el.l.Unlock()
 
 	el.l.Lock()
 	return el.a
 }
-func (el *NewRootConfigStt) Set(v []ProxyRoute) {
+func (el *ProxyRouteAStt) Set(v []ProxyRoute) {
 	defer el.l.Unlock()
 
 	el.a = v

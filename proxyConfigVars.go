@@ -1,4 +1,4 @@
 package SimpleReverseProxy
 
 var ProxyRootConfig ProxyConfig
-var ProxyNewRootConfig NewRootConfigStt
+var ProxyNewRootConfig ProxyRouteAStt
