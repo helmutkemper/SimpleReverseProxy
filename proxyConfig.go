@@ -130,12 +130,12 @@ func (el *ProxyConfig) RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
 		return
 	}
 
-	if len(newRoute.ProxyServers) == 0 {
+	if newRoute.ProxyServers.Len() == 0 {
 		output.ToOutput(0, errors.New("this function must receive at least one route that can be used in conjunction with the reverse proxy"), []int{}, w)
 		return
 	}
 
-	for _, route := range newRoute.ProxyServers {
+	for _, route := range newRoute.ProxyServers.Get() {
 		if route.Name == "" {
 			output.ToOutput(0, errors.New("every route must have a name assigned to it"), []int{}, w)
 			return
@@ -149,8 +149,10 @@ func (el *ProxyConfig) RouteAdd(w ProxyResponseWriter, r *ProxyRequest) {
 	}
 
 	// Habilita todas as rotas, pois, o padrão do go é false
-	for urlKey := range newRoute.ProxyServers {
-		newRoute.ProxyServers[urlKey].Enabled = true
+	for urlKey := range newRoute.ProxyServers.Get() {
+		tmp := newRoute.ProxyServers.GetKey(urlKey)
+		tmp.Enabled = true
+		newRoute.ProxyServers.SetKey(urlKey, tmp)
 	}
 
 	ProxyNewRootConfig.Set(ProxyRootConfig.Routes)
@@ -172,11 +174,11 @@ func (el *ProxyConfig) AddRouteToProxyStt(newRoute ProxyRoute) error {
 		return errors.New("this function only adds new routes that can be used in conjunction with the reverse proxy")
 	}
 
-	if len(newRoute.ProxyServers) == 0 {
+	if newRoute.ProxyServers.Len() == 0 {
 		return errors.New("this function must receive at least one route that can be used in conjunction with the reverse proxy")
 	}
 
-	for _, route := range newRoute.ProxyServers {
+	for _, route := range newRoute.ProxyServers.Get() {
 		if route.Name == "" {
 			return errors.New("every route must have a name assigned to it")
 		}
@@ -188,8 +190,10 @@ func (el *ProxyConfig) AddRouteToProxyStt(newRoute ProxyRoute) error {
 	}
 
 	// Habilita todas as rotas, pois, o padrão do go é false
-	for urlKey := range newRoute.ProxyServers {
-		newRoute.ProxyServers[urlKey].Enabled = true
+	for urlKey := range newRoute.ProxyServers.Get() {
+		tmp := newRoute.ProxyServers.GetKey(urlKey)
+		tmp.Enabled = true
+		newRoute.ProxyServers.SetKey(urlKey, tmp)
 	}
 
 	// O index é usado como ponteiro para algumas funções e contadores
@@ -214,11 +218,11 @@ func (el *ProxyConfig) AddRouteFromFuncStt(newRoute ProxyRoute) error {
 		return errors.New("this function only adds new routes that can't be used in conjunction with the reverse proxy")
 	}
 
-	if len(newRoute.ProxyServers) != 0 { //fixme: colocar um erro aqui
+	if newRoute.ProxyServers.Len() != 0 { //fixme: colocar um erro aqui
 		return errors.New("fixme: colocar um erro aqui")
 	}
 
-	for _, route := range newRoute.ProxyServers {
+	for _, route := range newRoute.ProxyServers.Get() {
 		if route.Name == "" {
 			return errors.New("every route must have a name assigned to it")
 		}
@@ -230,8 +234,10 @@ func (el *ProxyConfig) AddRouteFromFuncStt(newRoute ProxyRoute) error {
 	}
 
 	// Habilita todas as rotas, pois, o padrão do go é false
-	for urlKey := range newRoute.ProxyServers {
-		newRoute.ProxyServers[urlKey].Enabled = true
+	for urlKey := range newRoute.ProxyServers.Get() {
+		tmp := newRoute.ProxyServers.GetKey(urlKey)
+		tmp.Enabled = true
+		newRoute.ProxyServers.SetKey(urlKey, tmp)
 	}
 
 	// O index é usado como ponteiro para algumas funções e contadores
@@ -428,8 +434,10 @@ func (el *ProxyConfig) Prepare() {
 
 	// Habilita todas as rotas do proxy, pois, o padrão do go é false
 	for routesKey := range el.Routes {
-		for urlKey := range el.Routes[routesKey].ProxyServers {
-			el.Routes[routesKey].ProxyServers[urlKey].Enabled = true
+		for urlKey := range el.Routes[routesKey].ProxyServers.Get() {
+			tmp := el.Routes[routesKey].ProxyServers.GetKey(urlKey)
+			tmp.Enabled = true
+			el.Routes[routesKey].ProxyServers.SetKey(urlKey, tmp)
 		}
 	}
 
@@ -461,10 +469,12 @@ func (el *ProxyConfig) ProxyNotFound(w ProxyResponseWriter, r *ProxyRequest) {
 func (el *ProxyConfig) VerifyDisabled() {
 	for {
 		for routesKey := range el.Routes {
-			for urlKey := range el.Routes[routesKey].ProxyServers {
-				if time.Since(el.Routes[routesKey].ProxyServers[urlKey].DisabledSince) >= el.TimeToKeepDisabled && el.Routes[routesKey].ProxyServers[urlKey].Enabled == false && el.Routes[routesKey].ProxyServers[urlKey].Forever == false {
-					el.Routes[routesKey].ProxyServers[urlKey].ErrorConsecutiveCounter = 0
-					el.Routes[routesKey].ProxyServers[urlKey].Enabled = true
+			for urlKey := range el.Routes[routesKey].ProxyServers.Get() {
+				tmp := el.Routes[routesKey].ProxyServers.GetKey(urlKey)
+				if time.Since(tmp.DisabledSince) >= el.TimeToKeepDisabled && tmp.Enabled == false && tmp.Forever == false {
+					tmp.ErrorConsecutiveCounter = 0
+					tmp.Enabled = true
+					el.Routes[routesKey].ProxyServers.SetKey(urlKey, tmp)
 				}
 			}
 		}
