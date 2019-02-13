@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"github.com/helmutkemper/go-radix"
 	log "github.com/helmutkemper/seelog"
+	"github.com/helmutkemper/util"
 	"net/url"
-	"os"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -345,13 +346,254 @@ func (el *ProxyConfig) RouteDelete(w ProxyResponseWriter, r *ProxyRequest) {
 	output.ToOutput(ProxyNewRootConfig.Len(), nil, ProxyNewRootConfig, w)
 }
 
-// Inicializa algumas variáveis
-func (el *ProxyConfig) Prepare() {
+type ConfigStart struct {
+	Log   Log
+	Proxy ProxyEventConfig
+}
 
-	// Cria a pasta de log
-	logPath := "./log"
-	if _, err := os.Stat(logPath); os.IsNotExist(err) {
-		err = os.Mkdir(logPath, 0777)
+type ProxyEventConfig struct {
+}
+
+type LogConfig struct {
+	Path    string
+	MaxRoll int
+	MaxSize int
+	Format  string
+	Console Boolean
+}
+
+func (el *LogConfig) GetMaxRoll() string {
+	return strconv.FormatInt(int64(el.MaxRoll), 10)
+}
+
+func (el *LogConfig) GetMaxSize() string {
+	return strconv.FormatInt(int64(el.MaxSize), 10)
+}
+
+type Log struct {
+	MinLevel LogLevel
+	MaxLevel LogLevel
+
+	// For pervasive information on states of all elementary constructs. Use 'Trace' for in-depth debugging to
+	// find problem parts of a function, to check values of temporary variables, etc.
+	Trace LogConfig
+
+	// For general information on the application's work. Use 'Info' level in your code so that you could
+	// leave it 'enabled' even in production. So it is a 'production log level'.
+	Info LogConfig
+
+	// For detailed system behavior reports and diagnostic messages to help to locate problems during
+	// development.
+	Debug LogConfig
+
+	// For indicating small errors, strange situations, failures that are automatically handled in a safe
+	// manner.
+	Warn LogConfig
+
+	// For severe failures that affects application's workflow, not fatal, however (without forcing app
+	// shutdown).
+	Error LogConfig
+
+	// For producing final messages before application’s death. Note: critical messages force immediate flush
+	// because in critical situation it is important to avoid log message losses if app crashes.
+	Critical LogConfig
+}
+
+func (el *Log) Prepare() error {
+	var err error
+
+	if el.MinLevel == 0 {
+		el.MinLevel = LOG_LEVEL_WARN
+	}
+
+	if el.MaxLevel == 0 {
+		el.MaxLevel = LOG_LEVEL_CRITICAL
+	}
+
+	// Trace
+	if el.Trace.Path == "" {
+		el.Trace.Path = "./log/info.log"
+	}
+
+	if err = util.DirMake(el.Trace.Path); err != nil {
+		return err
+	}
+
+	if el.Trace.Format == "" {
+		el.Trace.Format = "[%Level::%Date %Time] %Msg%n"
+	}
+
+	if el.Trace.MaxRoll == 0 {
+		el.Trace.MaxRoll = 2
+	}
+
+	if el.Trace.MaxSize == 0 {
+		el.Trace.MaxSize = 50 * 1024 * 1024
+	}
+
+	if el.Trace.Console == BOOL_NOT_SET {
+		el.Trace.Console = BOOL_TRUE
+	}
+
+	// Info
+	if el.Info.Path == "" {
+		el.Info.Path = "./log/info.log"
+	}
+
+	if err = util.DirMake(el.Info.Path); err != nil {
+		return err
+	}
+
+	if el.Info.Format == "" {
+		el.Info.Format = "[%Level::%Date %Time] %Msg%n"
+	}
+
+	if el.Info.MaxRoll == 0 {
+		el.Info.MaxRoll = 2
+	}
+
+	if el.Info.MaxSize == 0 {
+		el.Info.MaxSize = 50 * 1024 * 1024
+	}
+
+	if el.Info.Console == BOOL_NOT_SET {
+		el.Info.Console = BOOL_TRUE
+	}
+
+	// Debug
+	if el.Debug.Path == "" {
+		el.Debug.Path = "./log/debug.log"
+	}
+
+	if err = util.DirMake(el.Debug.Path); err != nil {
+		return err
+	}
+
+	if el.Debug.Format == "" {
+		el.Debug.Format = "[%Level::%Date %Time] %Msg%n"
+	}
+
+	if el.Debug.MaxRoll == 0 {
+		el.Debug.MaxRoll = 2
+	}
+
+	if el.Debug.MaxSize == 0 {
+		el.Debug.MaxSize = 50 * 1024 * 1024
+	}
+
+	if el.Debug.Console == BOOL_NOT_SET {
+		el.Debug.Console = BOOL_TRUE
+	}
+
+	// Warn
+	if el.Warn.Path == "" {
+		el.Warn.Path = "./log/warn.log"
+	}
+
+	if err = util.DirMake(el.Warn.Path); err != nil {
+		return err
+	}
+
+	if el.Warn.Format == "" {
+		el.Warn.Format = "[%Level::%Date %Time] %Msg%n"
+	}
+
+	if el.Warn.MaxRoll == 0 {
+		el.Warn.MaxRoll = 2
+	}
+
+	if el.Warn.MaxSize == 0 {
+		el.Warn.MaxSize = 200 * 1024 * 1024
+	}
+
+	if el.Warn.Console == BOOL_NOT_SET {
+		el.Warn.Console = BOOL_TRUE
+	}
+
+	// Error
+	if el.Error.Path == "" {
+		el.Error.Path = "./log/warn.log"
+	}
+
+	if err = util.DirMake(el.Error.Path); err != nil {
+		return err
+	}
+
+	if el.Error.Format == "" {
+		el.Error.Format = "[%Level::%Date %Time] %Msg%n"
+	}
+
+	if el.Error.MaxRoll == 0 {
+		el.Error.MaxRoll = 2
+	}
+
+	if el.Error.MaxSize == 0 {
+		el.Error.MaxSize = 200 * 1024 * 1024
+	}
+
+	if el.Error.Console == BOOL_NOT_SET {
+		el.Error.Console = BOOL_TRUE
+	}
+
+	// Critical
+	if el.Critical.Path == "" {
+		el.Critical.Path = "./log/warn.log"
+	}
+
+	if err = util.DirMake(el.Critical.Path); err != nil {
+		return err
+	}
+
+	if el.Critical.Format == "" {
+		el.Critical.Format = "[%Level::%Date %Time] %Msg%n"
+	}
+
+	if el.Critical.MaxRoll == 0 {
+		el.Critical.MaxRoll = 2
+	}
+
+	if el.Critical.MaxSize == 0 {
+		el.Critical.MaxSize = 200 * 1024 * 1024
+	}
+
+	if el.Critical.Console == BOOL_NOT_SET {
+		el.Critical.Console = BOOL_TRUE
+	}
+
+	return nil
+}
+
+// Inicializa algumas variáveis
+func (el *ProxyConfig) Prepare(config ConfigStart) {
+
+	var traceConsole string
+	if config.Log.Trace.Console == BOOL_TRUE {
+		traceConsole = "<console/>"
+	}
+
+	var debugConsole string
+	if config.Log.Debug.Console == BOOL_TRUE {
+		debugConsole = "<console/>"
+	}
+
+	var infoConsole string
+	if config.Log.Info.Console == BOOL_TRUE {
+		infoConsole = "<console/>"
+	}
+
+	var warnConsole string
+	if config.Log.Warn.Console == BOOL_TRUE {
+		warnConsole = "<console/>"
+	}
+
+	var errorConsole string
+	if config.Log.Error.Console == BOOL_TRUE {
+		errorConsole = "<console/>"
+	}
+
+	var criticalConsole string
+	if config.Log.Critical.Console == BOOL_TRUE {
+		criticalConsole = "<console/>"
 	}
 
 	// Configura o log como arquivos com tamanho limitado. Um arquivo, info.log para coisas simples e um arquivo warn.log
@@ -360,29 +602,31 @@ func (el *ProxyConfig) Prepare() {
 		el.SeeLogConfig = `<seelog minlevel="warn" maxlevel="critical" type="sync">
   <outputs formatid="all">
     <filter levels="trace">
-      <rollingfile type="size" filename="` + logPath + `/info.log" maxrolls="2" maxsize="10000" />
+      <rollingfile type="size" filename="` + config.Log.Trace.Path + `" maxrolls="` + config.Log.Trace.GetMaxRoll() + `" maxsize="` + config.Log.Trace.GetMaxSize() + `" />` + traceConsole + `
     </filter>
     <filter levels="debug">
-      <rollingfile type="size" filename="` + logPath + `/info.log" maxrolls="2" maxsize="10000" />
+      <rollingfile type="size" filename="` + config.Log.Debug.Path + `" maxrolls="` + config.Log.Debug.GetMaxRoll() + `" maxsize="` + config.Log.Debug.GetMaxSize() + `" />` + debugConsole + `
     </filter>
     <filter levels="info">
-      <rollingfile type="size" filename="` + logPath + `/info.log" maxrolls="2" maxsize="10000" />
+      <rollingfile type="size" filename="` + config.Log.Info.Path + `" maxrolls="` + config.Log.Info.GetMaxRoll() + `" maxsize="` + config.Log.Info.GetMaxSize() + `" />` + infoConsole + `
     </filter>
     <filter levels="warn">
-      <rollingfile type="size" filename="` + logPath + `/warn.log" maxrolls="2" maxsize="10000" />
-      <console/>
+      <rollingfile type="size" filename="` + config.Log.Warn.Path + `" maxrolls="` + config.Log.Warn.GetMaxRoll() + `" maxsize="` + config.Log.Warn.GetMaxSize() + `" />` + warnConsole + `
     </filter>
     <filter levels="error">
-      <rollingfile type="size" filename="` + logPath + `/warn.log" maxrolls="2" maxsize="10000" />
-      <console/>
+      <rollingfile type="size" filename="` + config.Log.Error.Path + `" maxrolls="` + config.Log.Error.GetMaxRoll() + `" maxsize="` + config.Log.Error.GetMaxSize() + `" />` + errorConsole + `
     </filter>
     <filter levels="critical">
-      <rollingfile type="size" filename="` + logPath + `/warn.log" maxrolls="2" maxsize="10000" />
-      <console/>
+      <rollingfile type="size" filename="` + config.Log.Critical.Path + `" maxrolls="` + config.Log.Critical.GetMaxRoll() + `" maxsize="` + config.Log.Critical.GetMaxSize() + `" />` + criticalConsole + `
     </filter>
   </outputs>
   <formats>
-    <format id="all" format="[%Level::%Date %Time] %Msg%n"/>
+    <format id="trace"    format="` + config.Log.Trace.Format + `"/>
+    <format id="debug"    format="` + config.Log.Debug.Format + `"/>
+    <format id="info"     format="` + config.Log.Info.Format + `"/>
+    <format id="warn"     format="` + config.Log.Warn.Format + `"/>
+    <format id="error"    format="` + config.Log.Error.Format + `"/>
+    <format id="critical" format="` + config.Log.Critical.Format + `"/>
   </formats>
 </seelog>`
 	}
@@ -564,6 +808,10 @@ func (el *ProxyConfig) UnmarshalJSON(data []byte) error {
 	el.Routes.Set(tmp.Routes)
 
 	return nil
+}
+
+func NewStartConfig() ConfigStart {
+	return ConfigStart{}
 }
 
 func init() {

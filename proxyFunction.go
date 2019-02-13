@@ -12,10 +12,10 @@ import (
 func ProxyFunc(w http.ResponseWriter, r *http.Request) {
 
 	// Espera uma nova chamada para que a nova rota tenha efeito
-	if ProxyNewRootConfig.Len() > 0 {
+	/*if ProxyNewRootConfig.Len() > 0 {
 		ProxyRootConfig.Routes = ProxyNewRootConfig.Get()
 		ProxyNewRootConfig.Clear()
-	}
+	}*/
 
 	var responseWriter = ProxyResponseWriter{
 		ResponseWriter: w,
@@ -72,6 +72,26 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
 		// a rota foi encontrada
 
 		if data.(ProxyRoute).ProxyEnable == true {
+
+			if data.(ProxyRoute).LoadBalanceMode == LOAD_BALANCE_ROUND_ROBIN {
+				loopCounter := 0
+
+				for {
+					keyUrlToUse := 0
+					externalServerUrl := ""
+					externalServerUrl = data.(ProxyRoute).ProxyServers.GetKey(keyUrlToUse).Url
+
+					containerUrl, err := url.Parse(externalServerUrl)
+
+					transport := &transport{
+						RoundTripper: http.DefaultTransport,
+						Error:        nil,
+					}
+					proxy := NewSingleHostReverseProxy(containerUrl)
+					proxy.Transport = transport
+					proxy.ServeHTTP(w, r)
+				}
+			}
 
 			loopCounter := 0
 

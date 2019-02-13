@@ -30,6 +30,10 @@ type ProxyRoute struct {
 	*/
 	ProxyEnable bool `json:"proxyEnable"`
 
+	LoadBalanceMode LoadBalance `json:"loadBalanceMode"`
+
+	MaxErrorsLoop int `json:"maxErrorsLoop"`
+
 	/*
 	  Lista de todas as URLs para os containers com a aplicação
 	*/
