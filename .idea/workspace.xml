@@ -2,14 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="802ab9c7-d986-482b-87d8-a886fdba782a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/typeBool.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/typeLoadBalance.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/typeLogLevel.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proxyConfig.go" beforeDir="false" afterPath="$PROJECT_DIR$/proxyConfig.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/proxyFunction.go" beforeDir="false" afterPath="$PROJECT_DIR$/proxyFunction.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proxyRoute.go" beforeDir="false" afterPath="$PROJECT_DIR$/proxyRoute.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/proxyUrl.go" beforeDir="false" afterPath="$PROJECT_DIR$/proxyUrl.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typeNewRootConfigStt.go" beforeDir="false" afterPath="$PROJECT_DIR$/typeNewRootConfigStt.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,11 +15,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/proxyFunction.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="83" column="39" selection-start-line="83" selection-start-column="39" selection-end-line="83" selection-end-column="39" />
+            <state relative-caret-position="264">
+              <caret line="83" column="34" selection-start-line="83" selection-start-column="34" selection-end-line="83" selection-end-column="34" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/Programas/Golang/go1.11.4/src/net/url/url.go">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="291">
+              <caret line="459" column="5" selection-start-line="459" selection-start-column="5" selection-end-line="459" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -32,16 +37,16 @@
         <entry file="file://$PROJECT_DIR$/typeLoadBalance.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="210">
-              <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="26" />
+              <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/proxyConfig.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-215">
-              <caret line="350" column="24" selection-start-line="350" selection-start-column="24" selection-end-line="350" selection-end-column="24" />
+            <state relative-caret-position="630">
+              <caret line="631" column="48" selection-start-line="631" selection-start-column="48" selection-end-line="631" selection-end-column="48" />
             </state>
           </provider>
         </entry>
@@ -58,7 +63,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/proxyUrl.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="570">
+            <state relative-caret-position="600">
               <caret line="65" selection-start-line="65" selection-end-line="65" />
             </state>
           </provider>
@@ -111,11 +116,11 @@
         <option value="$PROJECT_DIR$/typeNewRootConfigStt.go" />
         <option value="$PROJECT_DIR$/logLevel.go" />
         <option value="$PROJECT_DIR$/../util/dir.go" />
-        <option value="$PROJECT_DIR$/proxyConfig.go" />
         <option value="$PROJECT_DIR$/proxyUrl.go" />
         <option value="$PROJECT_DIR$/typeBool.go" />
         <option value="$PROJECT_DIR$/typeLoadBalance.go" />
         <option value="$PROJECT_DIR$/proxyFunction.go" />
+        <option value="$PROJECT_DIR$/proxyConfig.go" />
       </list>
     </option>
   </component>
@@ -170,6 +175,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="59" y="25" width="1861" height="1055" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25454545" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -273,7 +279,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/proxyUrl.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="570">
+        <state relative-caret-position="600">
           <caret line="65" selection-start-line="65" selection-end-line="65" />
         </state>
       </provider>
@@ -315,17 +321,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/proxyConfig.go">
+    <entry file="file://$PROJECT_DIR$/proxyFunction.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-215">
-          <caret line="350" column="24" selection-start-line="350" selection-start-column="24" selection-end-line="350" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/typeLoadBalance.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="26" />
+        <state relative-caret-position="264">
+          <caret line="83" column="34" selection-start-line="83" selection-start-column="34" selection-end-line="83" selection-end-column="34" />
         </state>
       </provider>
     </entry>
@@ -336,10 +335,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/proxyFunction.go">
+    <entry file="file://$PROJECT_DIR$/typeLoadBalance.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="83" column="39" selection-start-line="83" selection-start-column="39" selection-end-line="83" selection-end-column="39" />
+        <state relative-caret-position="210">
+          <caret line="14" column="2" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/proxyConfig.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="631" column="48" selection-start-line="631" selection-start-column="48" selection-end-line="631" selection-end-column="48" />
         </state>
       </provider>
     </entry>

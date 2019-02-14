@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+const kLogFormat = "[%Level::%Date %Time] %Msg%n"
+
 type ProxyConfig struct {
 	readyToJSon bool `json:"-"`
 
@@ -420,7 +422,7 @@ func (el *Log) Prepare() error {
 	}
 
 	if el.Trace.Format == "" {
-		el.Trace.Format = "[%Level::%Date %Time] %Msg%n"
+		el.Trace.Format = kLogFormat
 	}
 
 	if el.Trace.MaxRoll == 0 {
@@ -445,7 +447,7 @@ func (el *Log) Prepare() error {
 	}
 
 	if el.Info.Format == "" {
-		el.Info.Format = "[%Level::%Date %Time] %Msg%n"
+		el.Info.Format = kLogFormat
 	}
 
 	if el.Info.MaxRoll == 0 {
@@ -470,7 +472,7 @@ func (el *Log) Prepare() error {
 	}
 
 	if el.Debug.Format == "" {
-		el.Debug.Format = "[%Level::%Date %Time] %Msg%n"
+		el.Debug.Format = kLogFormat
 	}
 
 	if el.Debug.MaxRoll == 0 {
@@ -495,7 +497,7 @@ func (el *Log) Prepare() error {
 	}
 
 	if el.Warn.Format == "" {
-		el.Warn.Format = "[%Level::%Date %Time] %Msg%n"
+		el.Warn.Format = kLogFormat
 	}
 
 	if el.Warn.MaxRoll == 0 {
@@ -520,7 +522,7 @@ func (el *Log) Prepare() error {
 	}
 
 	if el.Error.Format == "" {
-		el.Error.Format = "[%Level::%Date %Time] %Msg%n"
+		el.Error.Format = kLogFormat
 	}
 
 	if el.Error.MaxRoll == 0 {
@@ -545,7 +547,7 @@ func (el *Log) Prepare() error {
 	}
 
 	if el.Critical.Format == "" {
-		el.Critical.Format = "[%Level::%Date %Time] %Msg%n"
+		el.Critical.Format = kLogFormat
 	}
 
 	if el.Critical.MaxRoll == 0 {
@@ -627,6 +629,7 @@ func (el *ProxyConfig) Prepare(config ConfigStart) {
     <format id="warn"     format="` + config.Log.Warn.Format + `"/>
     <format id="error"    format="` + config.Log.Error.Format + `"/>
     <format id="critical" format="` + config.Log.Critical.Format + `"/>
+    <format id="all"      format="` + kLogFormat + `"/>
   </formats>
 </seelog>`
 	}
@@ -682,7 +685,10 @@ func (el *ProxyConfig) Prepare(config ConfigStart) {
 		for urlKey := range el.Routes.GetKey(routesKey).ProxyServers.Get() {
 			tmp := el.Routes.GetKey(routesKey).ProxyServers.GetKey(urlKey)
 			tmp.Enabled = true
-			el.Routes.GetKey(routesKey).ProxyServers.SetKey(urlKey, tmp)
+			//el.Routes.GetKey(routesKey).ProxyServers.SetKey(urlKey, tmp)
+			route := el.Routes.GetKey(routesKey)
+			route.ProxyServers.SetKey(urlKey, tmp)
+			el.Routes.SetKey(routesKey, route)
 		}
 	}
 
@@ -719,7 +725,10 @@ func (el *ProxyConfig) VerifyDisabled() {
 				if time.Since(tmp.DisabledSince) >= el.TimeToKeepDisabled && tmp.Enabled == false && tmp.Forever == false {
 					tmp.ErrorConsecutiveCounter = 0
 					tmp.Enabled = true
-					el.Routes.GetKey(routesKey).ProxyServers.SetKey(urlKey, tmp)
+					//el.Routes.GetKey(routesKey).ProxyServers.SetKey(urlKey, tmp)
+					route := el.Routes.GetKey(routesKey)
+					route.ProxyServers.SetKey(urlKey, tmp)
+					el.Routes.SetKey(routesKey, route)
 				}
 			}
 		}

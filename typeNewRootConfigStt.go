@@ -51,3 +51,12 @@ func (el *ProxyRouteAStt) Set(v []ProxyRoute) {
 
 	el.l.Lock()
 }
+
+//fixme: rever todos os setkey verificando tamanho do array
+func (el *ProxyRouteAStt) SetKey(k int, v ProxyRoute) {
+	defer el.l.Unlock()
+
+	el.a[k] = v
+
+	el.l.Lock()
+}
