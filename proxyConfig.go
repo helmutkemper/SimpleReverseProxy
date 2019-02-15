@@ -21,64 +21,64 @@ type ProxyConfig struct {
 	readyToJSon bool `json:"-"`
 
 	/*
-	  Configuração do seelog
-	  @see https://github.com/cihub/seelog
+	   Configuração do seelog
+	   @see https://github.com/cihub/seelog
 	*/
 	SeeLogConfig string `json:"seeLogConfig"`
 
 	/*
-	  Expressão regular que identifica o domínio do site
+	   Expressão regular que identifica o domínio do site
 	*/
 	DomainExpReg string `json:"domainExpReg"`
 
 	/*
-	  Função de erro genérica, caso a função do domínio não seja definida
+	   Função de erro genérica, caso a função do domínio não seja definida
 	*/
 	ErrorHandle         ProxyHandlerFunc `json:"-"`
 	ErrorHandleAsString string           `json:"ErrorHandle"`
 
 	/*
-	  Função de page not found genérica, caso a função do domínio não seja definida
+	   Função de page not found genérica, caso a função do domínio não seja definida
 	*/
 	NotFoundHandle         ProxyHandlerFunc `json:"-"`
 	NotFoundHandleAsString string           `json:"NotFoundHandle"`
 
 	/*
-	  Tamanho de caracteres do token de segurança
+	   Tamanho de caracteres do token de segurança
 	*/
 	UniqueIdLength int `json:"uniqueIdLength"`
 
 	/*
-	  URL do servidor principal
+	   URL do servidor principal
 	*/
 	ListenAndServe string `json:"listenAndServe"`
 
 	/*
-	  Quantidade máxima de loop quando todas as rotas do proxy falham
+	   Quantidade máxima de loop quando todas as rotas do proxy falham
 	*/
 	MaxLoopTry int
 
 	/*
-	  Quantidades de erros consecutivos para desabilitar uma rota do proxy.
-	  A ideia é que uma rota do proxy possa está dando erro temporário, assim, o código desabilita a rota por um tempo e
-	  depois habilita de novo para testar se a mesma voltou.
-	  Caso haja apenas uma instabilidade, a rota continua.
+	   Quantidades de erros consecutivos para desabilitar uma rota do proxy.
+	   A ideia é que uma rota do proxy possa está dando erro temporário, assim, o código desabilita a rota por um tempo e
+	   depois habilita de novo para testar se a mesma voltou.
+	   Caso haja apenas uma instabilidade, a rota continua.
 	*/
 	ConsecutiveErrorsToDisable int64
 
 	/*
-	  Tempo para manter uma rota do proxy desabilitada antes de testar novamente
+	   Tempo para manter uma rota do proxy desabilitada antes de testar novamente
 	*/
 	TimeToKeepDisabled time.Duration
 
 	/*
-	  Há uma função em loop infinito e a cada x período de tempo, ela verifica se alguma rota está desabilitada e reabilita
-	  caso o tempo de espera tenha sido excedido
+	   Há uma função em loop infinito e a cada x período de tempo, ela verifica se alguma rota está desabilitada e reabilita
+	   caso o tempo de espera tenha sido excedido
 	*/
 	TimeToVerifyDisabled time.Duration
 
 	/*
-	  Rotas do servidor proxy
+	   Rotas do servidor proxy
 	*/
 	Routes ProxyRouteAStt
 }

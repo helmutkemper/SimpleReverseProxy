@@ -46,6 +46,25 @@ func ProxyFunc(w http.ResponseWriter, r *http.Request) {
 		method = "ALL"
 	}
 
+	/*
+		Regras:
+		host pode ser string
+		host pode ser expreg.dominio
+		host pode ser dominio.expreg
+		host pode ser expreg
+		host pode ser ""
+
+		HOST_STRING
+		HOST_EXPREG_STRING
+		HOST_STRING_EXPREG
+		HOST_EXPREG
+		HOST_IGNORE
+
+		host/id/
+
+		PATH_
+	*/
+
 	var data, match = ProxyRadix.Get(r.Host)
 	if match == true {
 		match = data.(ProxyRoute).ProxyEnable

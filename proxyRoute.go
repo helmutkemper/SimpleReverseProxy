@@ -1,9 +1,5 @@
 package SimpleReverseProxy
 
-import (
-	"encoding/json"
-)
-
 type ProxyRoute struct {
 	/*
 	  Nome para o log e outras funções, deve ser único e começar com letra ou '_'
@@ -42,6 +38,7 @@ type ProxyRoute struct {
 	Index int `json:"index"`
 }
 
+/*
 func (el *ProxyRoute) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Name         string         `json:"name"`
@@ -59,3 +56,4 @@ func (el *ProxyRoute) MarshalJSON() ([]byte, error) {
 		ProxyServers: el.ProxyServers,
 	})
 }
+*/
